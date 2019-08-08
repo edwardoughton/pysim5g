@@ -2,32 +2,25 @@
 Path Loss Calculator
 
 Author: Edward Oughton
-Date: 1st April 2019
+Date: April 2019
 
 An implementation of a path loss calculator utilising (i) a Free Space model, (ii) the
-Extended Hata model (150 MHz - 3 GHz), and (iii) 3GPP's E-UTRA model (2-6 GHz) as found in
-the following documents:
+Extended Hata model (150 MHz - 3 GHz) as found in the following documents:
 
 ITU-R SM.2028-2
 Monte Carlo simulation methodology for the use in sharing and compatibility studies between
 different radio services or systems.
 
-3GPP TR 36.814 V9.2.0 (2017-03)
-3rd Generation Partnership Project;
-Technical Specification Group Radio Access Network;
-Evolved Universal Terrestrial Radio Access (E-UTRA);
-Further advancements for E-UTRA physical layer aspects
-(Release 9)
-
 """
 import numpy as np
 from math import pi, sqrt
+
 
 def path_loss_calculator(frequency, distance, ant_height, ant_type, building_height,
     street_width, settlement_type, type_of_sight, ue_height, above_roof, indoor,
     seed_value, iterations):
     """
-    Calculate the correct path loss given a range of critera
+    Calculate the correct path loss given a range of critera.
 
     Parameters
     ----------
@@ -89,6 +82,7 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type, building_hei
 
     return round(path_loss, 2), model
 
+
 def uma_nlos_optional(frequency, distance, ant_height, ue_height, seed_value, iterations):
     """
     UMa NLOS / Optional from ETSI TR 138.901 / 3GPP TR 38.901
@@ -104,20 +98,19 @@ def uma_nlos_optional(frequency, distance, ant_height, ue_height, seed_value, it
 
 
 def determine_path_loss(free_space_path_loss, extended_hata_path_loss):
-    """Model guidance states that 'when L [median path loss] is below
+    """
+    Model guidance states that 'when L [median path loss] is below
     the free space attenuation for the same distance, the free space
     attenuation is used instead.'
 
     Parameters
     ----------
-
     free_space_path_loss : int
         The path loss resulting from the use of the Free Space model (dB).
     extended_hata_path_loss : int
         The path loss resulting from the use of the Extended Hata model (dB).
 
     """
-
     if extended_hata_path_loss < free_space_path_loss:
 
         path_loss = free_space_path_loss
@@ -133,7 +126,8 @@ def determine_path_loss(free_space_path_loss, extended_hata_path_loss):
 
 
 def free_space(frequency, distance, ant_height, ue_height, seed_value, iterations):
-    """Implements the Free Space path loss model.
+    """
+    Implements the Free Space path loss model.
 
     Parameters
     ----------
@@ -167,7 +161,8 @@ def free_space(frequency, distance, ant_height, ue_height, seed_value, iteration
 def extended_hata(frequency, distance, ant_height, ant_type, building_height,
     street_width, settlement_type, type_of_sight, ue_height, above_roof,
     seed_value, iterations):
-    """Implements the Extended Hata path loss model.
+    """
+    Implements the Extended Hata path loss model.
 
     Parameters
     ----------
@@ -679,6 +674,7 @@ def generate_log_normal_dist_value(frequency, mu, sigma, draws, seed_value):
     hs = np.random.lognormal(normal_mean, normal_std, draws)
 
     return round(np.mean(hs),2)
+
 
 def outdoor_to_indoor_path_loss(frequency, indoor, seed_value):
     """
