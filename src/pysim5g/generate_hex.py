@@ -1,3 +1,10 @@
+"""
+Original code written by Stephan Hügel in the Hexcover package and pretty
+much lifted for use here.
+
+See the git repo for futher details: https://github.com/urschrei/hexcover
+
+"""
 import os
 import configparser
 import math
@@ -22,8 +29,8 @@ def convert_point_to_projected_crs(point, original_crs, new_crs):
     """
     Existing elevation path needs to be converted from WGS84 to projected
     coordinates.
+
     """
-    # Geometry transform function based on pyproj.transform
     project = partial(
         pyproj.transform,
         pyproj.Proj(init = original_crs),
@@ -48,6 +55,7 @@ def calculate_polygons(startx, starty, endx, endy, radius):
     Returns a list of lists containing 6 tuples of x, y point coordinates
     These can be used to construct valid regular hexagonal polygons
     You will probably want to use projected coordinates for this
+
     """
     # calculate side length given radius
     sl = (2 * radius) * math.tan(math.pi / 6)
@@ -63,7 +71,8 @@ def calculate_polygons(startx, starty, endx, endy, radius):
     w = b * 2
     h = 2 * sl
 
-    # offset start and end coordinates by hex widths and heights to guarantee coverage
+    # offset start and end coordinates by hex widths and heights to guarantee
+    # coverage
     startx = startx - w
     starty = starty - h
     endx = endx + w
@@ -116,7 +125,13 @@ def calculate_polygons(startx, starty, endx, endy, radius):
 
 
 def find_closest_cell_areas(hexagons, geom_shape):
+    """
+    Get the transmitter and interfering cell areas, by finding the closest
+    hex shapes. The first closest hex shape to the transmitter will be the
+    transmitter's cell area. The next closest hex areas will be the
+    intefering cell areas.
 
+    """
     idx = index.Index()
 
     for site in hexagons:
@@ -153,7 +168,10 @@ def find_closest_cell_areas(hexagons, geom_shape):
 
 
 def find_site_locations(cell_area, interfering_cell_areas):
+    """
+    Get the centroid for each cell area and intefering cell areas.
 
+    """
     cell_area_site = Polygon(
         cell_area[0]['geometry']['coordinates'][0]
         ).centroid
@@ -183,7 +201,8 @@ def find_site_locations(cell_area, interfering_cell_areas):
 def generate_cell_areas(point, inter_site_distance):
     """
     Generate a cell area, as well as the interfering cell areas, for
-    a specific inter-site distance
+    a specific inter-site distance.
+
     """
     geom_shape = shape(point['geometry'])
     buffered = Polygon(geom_shape.buffer(inter_site_distance*2).exterior)
@@ -216,7 +235,10 @@ def generate_cell_areas(point, inter_site_distance):
 
 
 def produce_sites_and_cell_areas(unprojected_point, inter_site_distance):
+    """
+    Meta function to produce a set of hex shapes with a specific inter-site distance.
 
+    """
     point = convert_point_to_projected_crs(unprojected_point, 'EPSG:4326', 'EPSG:27700')
 
     cell_area, interfering_cell_areas = generate_cell_areas(point, inter_site_distance)
@@ -227,8 +249,10 @@ def produce_sites_and_cell_areas(unprojected_point, inter_site_distance):
 
 
 def write_shapefile(data, filename):
+    """
+    Write data to shapefile for visual validation.
 
-    # Translate props to Fiona sink schema
+    """
     prop_schema = []
     for name, value in data[0]['properties'].items():
         fiona_prop_type = next((
@@ -246,13 +270,10 @@ def write_shapefile(data, filename):
         'properties': OrderedDict(prop_schema)
     }
 
-    # Create path
     directory = os.path.join(DATA_INTERMEDIATE, 'test_simulation')
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    print(os.path.join(directory, filename))
-    # Write all elements to output file
     with fiona.open(
         os.path.join(directory, filename), 'w',
         driver=sink_driver, crs=sink_crs, schema=sink_schema) as sink:
@@ -270,7 +291,7 @@ if __name__ == '__main__':
     transmitter, interfering_transmitters, cell_area, interfering_cell_areas = \
         produce_sites_and_cell_areas(unprojected_point, 750)
 
-    # write_shapefile(transmitter, 'transmitter.shp')
-    # write_shapefile(cell_area, 'cell_area.shp')
-    # write_shapefile(interfering_transmitters, 'interfering_transmitters.shp')
-    # write_shapefile(interfering_cell_areas, 'interfering_cell_areas.shp')
+    write_shapefile(transmitter, 'transmitter.shp')
+    write_shapefile(cell_area, 'cell_area.shp')
+    write_shapefile(interfering_transmitters, 'interfering_transmitters.shp')
+    write_shapefile(interfering_cell_areas, 'interfering_cell_areas.shp')
