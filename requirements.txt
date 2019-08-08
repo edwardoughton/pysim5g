@@ -2,6 +2,3 @@
 fiona>=1.7
 Rtree>=0.8.3
 pyproj
-shapely>=1.6
-sphinx>=1.8
-
