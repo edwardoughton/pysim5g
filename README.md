@@ -56,10 +56,7 @@ Install `pyproj` using:
 
     conda install -c conda-forge pyproj
 
-
-
-
-To install pyseamcat permanently:
+To install pysim5g permanently:
 
     python setup.py install
 
@@ -67,28 +64,9 @@ To build the documentation:
 
     python setup.py docs
 
-Users may need to additionally install `Sphinx` as follows:
-
-    conda install sphinx
-
-And potentially recommonmark:
-
-    pip install recommonmark
-
 The run the tests:
 
     python setup.py test
-
-To lint for consistent type usage, install `mypy` and run:
-
-    pip install mypy
-    mpyp pyseamcat
-
-To lint for general python style, install `pylint` and run:
-
-    pip install pylint
-    pylint pyseamcat
-
 
 Background and funding
 ======================
