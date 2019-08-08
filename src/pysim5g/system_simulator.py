@@ -1,19 +1,18 @@
 """
-System-level wireless network simulator
+System-level network simulator for 4G/5G
 
-Written by Edward Oughton
-May 2019
+Author: Edward Oughton
+Date: May 2019
 
 """
 from rtree import index
 from shapely.geometry import shape, Point, LineString
 import numpy as np
-from geographiclib.geodesic import Geodesic
 from itertools import tee
 from pyproj import Proj, transform
 from collections import OrderedDict
 
-from digital_comms.mobile_network.path_loss_module import path_loss_calculator
+from src.pysim5g.path_loss_module import path_loss_calculator
 
 #set numpy seed
 np.random.seed(42)
