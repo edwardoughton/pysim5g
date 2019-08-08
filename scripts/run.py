@@ -19,8 +19,8 @@ from rtree import index
 
 from collections import OrderedDict
 
-from digital_comms.mobile_network.generate_hex import produce_sites_and_cell_areas
-from digital_comms.mobile_network.system_simulator import SimulationManager
+from src.pysim5g.generate_hex import produce_sites_and_cell_areas
+from src.pysim5g.system_simulator import SimulationManager
 
 np.random.seed(42)
 
@@ -509,11 +509,11 @@ if __name__ == '__main__':
             yield n
 
     CELL_RADII = {
-        'urban': 
+        'urban':
             generate_cell_radii(250, 30000, 1000),
-        'suburban': 
-            generate_cell_radii(250, 30000, 1000),        
-        'rural': 
+        'suburban':
+            generate_cell_radii(250, 30000, 1000),
+        'rural':
             generate_cell_radii(250, 30000, 1000)
         }
 
