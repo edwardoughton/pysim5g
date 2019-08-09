@@ -18,7 +18,11 @@ import pyproj
 from collections import OrderedDict
 
 CONFIG = configparser.ConfigParser()
-CONFIG.read(os.path.join(os.path.dirname(__file__),'..','..','scripts','script_config.ini'))
+CONFIG.read(
+    os.path.join(
+        os.path.dirname(__file__),'..','..','scripts','script_config.ini'
+    )
+)
 BASE_PATH = CONFIG['file_locations']['base_path']
 
 DATA_RAW = os.path.join(BASE_PATH, 'raw')
@@ -27,8 +31,22 @@ DATA_INTERMEDIATE = os.path.join(BASE_PATH, 'intermediate')
 
 def convert_point_to_projected_crs(point, original_crs, new_crs):
     """
-    Existing elevation path needs to be converted from WGS84 to projected
-    coordinates.
+
+    Convert geojson point to projected coordinates.
+
+    Parameters
+    ----------
+    point : dict
+        Geojson point.
+    original_crs : string
+        Original Coordinate Reference System.
+    new_crs : string
+        New Coordinate Reference System.
+
+    Outputs
+    -------
+    output : dict
+        Geojson point in desired Coordinate Reference System.
 
     """
     project = partial(
@@ -50,12 +68,32 @@ def convert_point_to_projected_crs(point, original_crs, new_crs):
 
 def calculate_polygons(startx, starty, endx, endy, radius):
     """
-    Calculate a grid of hexagon coordinates of the given radius
-    given lower-left and upper-right coordinates
-    Returns a list of lists containing 6 tuples of x, y point coordinates
-    These can be used to construct valid regular hexagonal polygons
-    You will probably want to use projected coordinates for this
 
+    Calculate a grid of hexagon coordinates of the given radius
+    given lower-left and upper-right coordinates. Returns a 
+    list of lists containing 6 tuples of x, y point coordinates.
+    These can be used to construct valid regular hexagonal polygons
+    Projected coordinates are advised. 
+
+    Parameters
+    ----------
+    startx : float
+        Starting coordinate x.
+    starty : float
+        Starting coordinate y.
+    endx : float
+        Ending coordinate x.
+    endy : float
+        Ending coordinate y.
+    radius : int
+        Given radius of cell areas.
+
+    Outputs
+    -------
+    polygons : list of lists
+        A list containing multiple polygons. Each individual polygon 
+        is a list of tuple coordinates.  
+    
     """
     # calculate side length given radius
     sl = (2 * radius) * math.tan(math.pi / 6)
@@ -81,7 +119,6 @@ def calculate_polygons(startx, starty, endx, endy, radius):
     origx = startx
     origy = starty
 
-
     # offsets for moving along and up rows
     xoffset = b
     yoffset = 3 * p
@@ -91,10 +128,13 @@ def calculate_polygons(startx, starty, endx, endy, radius):
     counter = 0
 
     while starty < endy:
+
         if row % 2 == 0:
             startx = origx + xoffset
+        
         else:
             startx = origx
+        
         while startx < endx:
             p1x = startx
             p1y = starty + p
@@ -116,20 +156,39 @@ def calculate_polygons(startx, starty, endx, endy, radius):
                 (p5x, p5y),
                 (p6x, p6y),
                 (p1x, p1y)]
+
             polygons.append(poly)
+        
             counter += 1
             startx += w
+        
         starty += yoffset
         row += 1
+
     return polygons
 
 
 def find_closest_cell_areas(hexagons, geom_shape):
     """
+
     Get the transmitter and interfering cell areas, by finding the closest
     hex shapes. The first closest hex shape to the transmitter will be the
     transmitter's cell area. The next closest hex areas will be the
     intefering cell areas.
+
+    Parameters
+    ----------
+    hexagons : list of dicts
+        Each haxagon is a geojson dict.
+    geom_shape : Shapely geometry object
+        Geometry object for the transmitter.
+
+    Outputs
+    -------
+    cell_area : List of dicts
+        Contains the geojson cell area for the transmitter.
+    interfering_cell_areas : List of dicts
+        Contains the geojson interfering cell areas. 
 
     """
     idx = index.Index()
@@ -169,7 +228,23 @@ def find_closest_cell_areas(hexagons, geom_shape):
 
 def find_site_locations(cell_area, interfering_cell_areas):
     """
+
     Get the centroid for each cell area and intefering cell areas.
+
+
+    Parameters
+    ----------
+    cell_area : List of dicts
+        Contains the geojson cell area for the transmitter.
+    interfering_cell_areas : List of dicts
+        Contains the geojson interfering cell areas. 
+
+    Outputs
+    -------
+    transmitter : List of dicts
+        Contains the geojson site location for the transmitter.
+    interfering_cell_areas : List of dicts
+        Contains the geojson site locations for interfering cells. 
 
     """
     cell_area_site = Polygon(
@@ -198,19 +273,35 @@ def find_site_locations(cell_area, interfering_cell_areas):
     return transmitter, interfering_transmitters
 
 
-def generate_cell_areas(point, inter_site_distance):
+def generate_cell_areas(point, cell_radius):
     """
-    Generate a cell area, as well as the interfering cell areas, for
-    a specific inter-site distance.
 
+    Generate a cell area, as well as the interfering cell areas, for
+    a specific cell_radius.
+
+    Parameters
+    ----------
+    point : dict
+        Geojson point in desired Coordinate Reference System.
+    cell_radius : int
+        Distance between transmitter and cell edge in meters.
+
+    Outputs
+    -------
+    cell_area : List of dicts
+        Contains the geojson cell area for the transmitter.
+    interfering_cell_areas : List of dicts
+        Contains the geojson interfering cell areas. 
+        
     """
     geom_shape = shape(point['geometry'])
-    buffered = Polygon(geom_shape.buffer(inter_site_distance*2).exterior)
+
+    buffered = Polygon(geom_shape.buffer(cell_radius*2).exterior)
 
     polygon = calculate_polygons(
         buffered.bounds[0], buffered.bounds[1],
         buffered.bounds[2], buffered.bounds[3],
-        inter_site_distance)
+        cell_radius)
 
     hexagons = []
     id_num = 0
@@ -229,19 +320,41 @@ def generate_cell_areas(point, inter_site_distance):
 
         id_num += 1
 
-    cell_area, interfering_cell_areas = find_closest_cell_areas(hexagons, geom_shape)
+    cell_area, interfering_cell_areas = find_closest_cell_areas(
+        hexagons, geom_shape
+    )
 
     return cell_area, interfering_cell_areas
 
 
-def produce_sites_and_cell_areas(unprojected_point, inter_site_distance):
+def produce_sites_and_cell_areas(unprojected_point, cell_radius):
     """
-    Meta function to produce a set of hex shapes with a specific inter-site distance.
+
+    Meta function to produce a set of hex shapes with a specific cell_radius.
+
+    Parameters
+    ----------
+    unprojected_point : Tuple
+        x and y coordinates for an unprojected point.
+    cell_radius : int
+        Distance between transmitter and cell edge in meters.
+
+    Outputs
+    -------
+    transmitter : List of dicts
+        Contains a geojson dict for the transmitter site.    
+    interfering_transmitters : List of dicts
+        Contains multiple geojson dicts for the interfering transmitter sites.
+    cell_area : List of dicts
+        Contains a geojson dict for the transmitter cell area.   
+    interfering_cell_areas : List of dicts
+        Contains multiple geojson dicts for the interfering transmitter cell
+        areas.
 
     """
     point = convert_point_to_projected_crs(unprojected_point, 'EPSG:4326', 'EPSG:27700')
 
-    cell_area, interfering_cell_areas = generate_cell_areas(point, inter_site_distance)
+    cell_area, interfering_cell_areas = generate_cell_areas(point, cell_radius)
 
     transmitter, interfering_transmitters = find_site_locations(cell_area, interfering_cell_areas)
 
@@ -250,7 +363,20 @@ def produce_sites_and_cell_areas(unprojected_point, inter_site_distance):
 
 def write_shapefile(data, filename):
     """
+
     Write data to shapefile for visual validation.
+
+    Parameters
+    ----------
+    data : List of dicts
+        Contains geojson dictionaries for writing to .shp.
+    filename : string
+        Desired filename for .shp output
+
+    Outputs
+    -------
+    filename.shp : Shapefile
+        Shapefile of desired data for writing.    
 
     """
     prop_schema = []
