@@ -2,3 +2,4 @@
 fiona>=1.7
 Rtree>=0.8.3
 pyproj
+pytest

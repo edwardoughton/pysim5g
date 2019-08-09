@@ -83,20 +83,6 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type, building_hei
     return round(path_loss, 2), model
 
 
-def uma_nlos_optional(frequency, distance, ant_height, ue_height, seed_value, iterations):
-    """
-    UMa NLOS / Optional from ETSI TR 138.901 / 3GPP TR 38.901
-
-    """
-    distance_3d = sqrt((distance)**2 + (ant_height - ue_height)**2)
-
-    path_loss = 32.4 + 20*np.log10(frequency) + 30*np.log10(distance_3d)
-
-    random_variation = generate_log_normal_dist_value(frequency, 1, 7.8, iterations, seed_value)
-
-    return round(path_loss + random_variation,2)
-
-
 def determine_path_loss(free_space_path_loss, extended_hata_path_loss):
     """
     Model guidance states that 'when L [median path loss] is below
@@ -149,7 +135,7 @@ def free_space(frequency, distance, ant_height, ue_height, seed_value, iteration
     distance = distance/1000
 
     random_variation = generate_log_normal_dist_value(frequency, 1, 2.5, iterations, seed_value)
-    # print(random_variation)
+
     path_loss = (
         32.4 + 10*np.log10((((ant_height - ue_height)/1000)**2 + \
         distance**2)) + (20*np.log10(frequency) + random_variation)
@@ -379,6 +365,21 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
         )
 
     return round(path_loss, 2)
+
+
+def uma_nlos_optional(frequency, distance, ant_height, ue_height, seed_value, iterations):
+    """
+    UMa NLOS / Optional from ETSI TR 138.901 / 3GPP TR 38.901
+
+    """
+    distance_3d = sqrt((distance)**2 + (ant_height - ue_height)**2)
+
+    path_loss = 32.4 + 20*np.log10(frequency) + 30*np.log10(distance_3d)
+
+    random_variation = generate_log_normal_dist_value(frequency, 1, 7.8, iterations, seed_value)
+
+    return round(path_loss + random_variation,2)
+
 
 # def e_utra_3gpp_tr36_814(frequency, distance, ant_height, ant_type, building_height,
 #     street_width, settlement_type, type_of_sight, ue_height, seed_value):
