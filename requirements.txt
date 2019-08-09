@@ -1,4 +1,7 @@
 # Add your requirements here:
+libspatialindex #may need 'sudo apt install python3-rtree' on linux ubuntu
+shapely
+numpy
 fiona>=1.7
 Rtree>=0.8.3
 pyproj
