@@ -56,7 +56,7 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type, building_hei
             frequency, distance, ant_height, ant_type, building_height, street_width,
             settlement_type, type_of_sight, ue_height, above_roof, seed_value, iterations
         )
-
+        print('free space is {}'.format(free_space))
         path_loss, model = determine_path_loss(free_space_path_loss, extended_hata_path_loss)
 
     elif 3 <= frequency < 6:
@@ -79,7 +79,8 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type, building_hei
         )
 
     path_loss = path_loss + outdoor_to_indoor_path_loss(frequency, indoor, seed_value)
-
+    print('path_loss is {}'.format(path_loss))
+        
     return round(path_loss, 2), model
 
 
