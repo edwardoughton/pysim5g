@@ -80,6 +80,7 @@ Contributors
 - Edward J. Oughton (Oxford)
 - Kostas Kotsaros (Digital Catapult)
 - Fariborz Entezami (Digital Catapult)
+- Tom Russell (Oxford)
 - Dritan Kaleshi (Digital Catapult)
 - Catarina Fernandes (Digital Catapult)
 - Jon Crowcroft (Cambridge)
