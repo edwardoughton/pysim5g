@@ -1,4 +1,5 @@
 """
+
 Original code written by Stephan Hügel in the Hexcover package and pretty
 much lifted for use here.
 
@@ -43,7 +44,7 @@ def convert_point_to_projected_crs(point, original_crs, new_crs):
     new_crs : string
         New Coordinate Reference System.
 
-    Outputs
+    Returns
     -------
     output : dict
         Geojson point in desired Coordinate Reference System.
@@ -88,7 +89,7 @@ def calculate_polygons(startx, starty, endx, endy, radius):
     radius : int
         Given radius of cell areas.
 
-    Outputs
+    Returns
     -------
     polygons : list of lists
         A list containing multiple polygons. Each individual polygon
@@ -183,7 +184,7 @@ def find_closest_cell_areas(hexagons, geom_shape):
     geom_shape : Shapely geometry object
         Geometry object for the transmitter.
 
-    Outputs
+    Returns
     -------
     cell_area : List of dicts
         Contains the geojson cell area for the transmitter.
@@ -231,7 +232,6 @@ def find_site_locations(cell_area, interfering_cell_areas):
 
     Get the centroid for each cell area and intefering cell areas.
 
-
     Parameters
     ----------
     cell_area : List of dicts
@@ -239,7 +239,7 @@ def find_site_locations(cell_area, interfering_cell_areas):
     interfering_cell_areas : List of dicts
         Contains the geojson interfering cell areas.
 
-    Outputs
+    Returns
     -------
     transmitter : List of dicts
         Contains the geojson site location for the transmitter.
@@ -286,7 +286,7 @@ def generate_cell_areas(point, cell_radius):
     cell_radius : int
         Distance between transmitter and cell edge in meters.
 
-    Outputs
+    Returns
     -------
     cell_area : List of dicts
         Contains the geojson cell area for the transmitter.
@@ -339,7 +339,7 @@ def produce_sites_and_cell_areas(unprojected_point, cell_radius):
     cell_radius : int
         Distance between transmitter and cell edge in meters.
 
-    Outputs
+    Returns
     -------
     transmitter : List of dicts
         Contains a geojson dict for the transmitter site.
@@ -373,7 +373,7 @@ def write_shapefile(data, filename):
     filename : string
         Desired filename for .shp output
 
-    Outputs
+    Returns
     -------
     filename.shp : Shapefile
         Shapefile of desired data for writing.
