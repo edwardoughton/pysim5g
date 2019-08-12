@@ -30,7 +30,7 @@ class SimulationManager(object):
     receivers : list of dicts
         Contains a dict for each User Equipment (UE) receiver.
     cell_area : list of dicts
-        Contains geojson dict for the cell area polygon. 
+        Contains geojson dict for the cell area polygon.
     simulation_parameters : dict
         A dict containing all simulation parameters necessary.
 
@@ -57,7 +57,7 @@ class SimulationManager(object):
 
 
     def estimate_link_budget(self, frequency, bandwidth,
-        generation, mast_height, environment, 
+        generation, mast_height, environment,
         modulation_and_coding_lut, simulation_parameters):
         """
 
@@ -70,9 +70,9 @@ class SimulationManager(object):
         bandwidth : int
             The bandwidth of the carrier frequency (MHz).
         generation : string
-            Either 4G or 5G dependent on technology. 
+            Either 4G or 5G dependent on technology.
         mast_height : int
-            Height of the modelled transmitters in meters. 
+            Height of the modelled transmitters in meters.
         environment : string
             Either urban, suburban or rural.
         modulation_and_coding_lut : list of tuples
@@ -119,7 +119,7 @@ class SimulationManager(object):
                 sinr, generation, modulation_and_coding_lut
             )
 
-            average_capacity_mbps, average_capacity_mbps_km2 = (
+            capacity_mbps, capacity_mbps_km2 = (
                 self.average_capacity(
                 bandwidth, spectral_efficiency)
             )
@@ -139,8 +139,8 @@ class SimulationManager(object):
                 'i_plus_n': np.log10(i_plus_n),
                 'sinr': sinr,
                 'spectral_efficiency': spectral_efficiency,
-                'average_capacity_mbps': average_capacity_mbps, 
-                'average_capacity_mbps_km2': average_capacity_mbps_km2,
+                'capacity_mbps': capacity_mbps,
+                'capacity_mbps_km2': capacity_mbps_km2,
                 'receiver_x': receiver.coordinates[0],
                 'receiver_y': receiver.coordinates[1],
                 })
@@ -148,13 +148,13 @@ class SimulationManager(object):
         return results
 
 
-    def calculate_path_loss(self, receiver, frequency, 
+    def calculate_path_loss(self, receiver, frequency,
         environment, seed_value, iterations):
         """
 
-        Function to calculate the path loss between a transmitter 
+        Function to calculate the path loss between a transmitter
         and receiver.
-        
+
         Parameters
         ----------
         receiver : object
@@ -171,12 +171,12 @@ class SimulationManager(object):
         Returns
         -------
         path_loss : float
-            Estimated path loss in decibels between the transmitter 
+            Estimated path loss in decibels between the transmitter
             and receiver.
         model : string
             Specifies which propagation model was used.
         strt_distance : int
-            States the straight line distance in meters between the 
+            States the straight line distance in meters between the
             transmitter and receiver.
         type_of_sight : string
             Either Line of Sight or None Line of Sight.
@@ -229,7 +229,7 @@ class SimulationManager(object):
 
     def calc_received_power(self, transmitter, receiver, path_loss):
         """
-        
+
         Calculate received power based on transmitter and receiver
         characteristcs, and path loss.
 
@@ -244,7 +244,7 @@ class SimulationManager(object):
         receiver : object
             Receiving User Equipment (UE) item.
         path_loss : float
-            Estimated path loss in decibels between the transmitter 
+            Estimated path loss in decibels between the transmitter
             and receiver.
 
         Returns
@@ -255,15 +255,15 @@ class SimulationManager(object):
         """
         #calculate Equivalent Isotropically Radiated Power (EIRP)
         eirp = (
-            float(self.transmitter.power) + 
-            float(self.transmitter.gain) - 
+            float(self.transmitter.power) +
+            float(self.transmitter.gain) -
             float(self.transmitter.losses)
         )
 
         received_power = ( eirp -
-            path_loss - 
-            receiver.misc_losses + 
-            receiver.gain - 
+            path_loss -
+            receiver.misc_losses +
+            receiver.gain -
             receiver.losses
         )
 
@@ -278,7 +278,7 @@ class SimulationManager(object):
         closest_sites contains all sites, ranked based
         on distance, meaning we need to select cells 1-3 (as cell 0
         is the actual cell in use)
-       
+
         Parameters
         ----------
         receiver : object
@@ -299,30 +299,21 @@ class SimulationManager(object):
         model : string
             Specifies which propagation model was used.
         ave_distance : float
-            The average straight line distance in meters between the 
+            The average straight line distance in meters between the
             interfering transmitters and receiver.
         ave_pl : string
-            The average path loss in decibels between the interfering 
+            The average path loss in decibels between the interfering
             transmitters and receiver.
-        
+
         """
         interference = []
-
-        x1_receiver, y1_receiver = transform_coordinates(
-            Proj(init='epsg:27700'),
-            Proj(init='epsg:4326'),
-            receiver.coordinates[0],
-            receiver.coordinates[1]
-        )
 
         ave_distance = 0
         ave_pl = 0
 
-        interfering_transmitter_id = 0
-        #calculate interference from other power sources
         for interfering_transmitter in self.interfering_transmitters.values():
 
-            # if interfering_transmitter_id < 3:
+
             temp_line = LineString(
                 [
                     (receiver.coordinates[0],
@@ -380,7 +371,7 @@ class SimulationManager(object):
         ave_distance = (
             ave_distance / len(self.interfering_transmitters.values())
         )
-        
+
         ave_pl = (
             ave_pl / len(self.interfering_transmitters.values())
         )
@@ -397,8 +388,8 @@ class SimulationManager(object):
 
         “K (Boltzmann constant) x T (290K) x bandwidth”.
 
-        The bandwidth depends on bit rate, which defines the number 
-        of resource blocks. We assume 50 resource blocks, equal 9 MHz, 
+        The bandwidth depends on bit rate, which defines the number
+        of resource blocks. We assume 50 resource blocks, equal 9 MHz,
         transmission for 1 Mbps downlink.
 
         Required SNR (dB)
@@ -489,7 +480,7 @@ class SimulationManager(object):
         return received_power, raw_sum_of_interference, noise, i_plus_n, sinr
 
 
-    def modulation_scheme_and_coding_rate(self, sinr, generation, 
+    def modulation_scheme_and_coding_rate(self, sinr, generation,
         modulation_and_coding_lut):
         """
         Uses the SINR to determine spectral efficiency given the relevant
@@ -500,11 +491,11 @@ class SimulationManager(object):
         sinr : float
             Signal-to-Interference-plus-Noise-Ratio (SINR) in decibels.
         generation : string
-            Either 4G or 5G dependent on technology. 
+            Either 4G or 5G dependent on technology.
         modulation_and_coding_lut : list of tuples
             A lookup table containing modulation and coding rates,
             spectral efficiencies and SINR estimates.
-        
+
         Returns
         -------
         spectral_efficiency : float
@@ -550,23 +541,23 @@ class SimulationManager(object):
 
         Returns
         -------
-        average_capacity_mbps : float 
+        capacity_mbps : float
             Average link budget capacity in Mbps.
-        average_capacity_mbps_km2 : float
+        capacity_mbps_km2 : float
             Average cell area capacity in Mbps km^2.
 
         """
         bandwidth_in_hertz = bandwidth * 1e6 #MHz to Hz
-        
-        average_capacity_mbps = (
+
+        capacity_mbps = (
             (bandwidth_in_hertz * spectral_efficiency) / 1e6
         )
 
-        average_capacity_mbps_km2 = (
-            average_capacity_mbps / (self.cell_area.area / 1e6)
-        ) 
-        
-        return average_capacity_mbps, average_capacity_mbps_km2
+        capacity_mbps_km2 = (
+            capacity_mbps / (self.cell_area.area / 1e6)
+        )
+
+        return capacity_mbps, capacity_mbps_km2
 
 
     def site_density(self):
@@ -661,7 +652,7 @@ class CellArea(object):
     """
 
     Cell area object.
-    
+
     Parameters
     ----------
     data : dict
@@ -733,34 +724,6 @@ class InterferingTransmitter(object):
         self.power = simulation_parameters['tx_power']
         self.gain = simulation_parameters['tx_gain']
         self.losses = simulation_parameters['tx_losses']
-
-
-def transform_coordinates(original_crs, new_crs, x, y):
-    """
-    Transform coordinates.
-
-    Parameters
-    ----------
-    original_crs : string
-        Original Coordinate Reference System.
-    new_crs : string
-        New Coordinate Reference System.
-    x : float
-        Original x coordinate.
-    y : float
-        Original y coordinate.
-
-    Outputs
-    -------
-    new_x : float
-        Transformed x coordinate.
-    new_y : float
-        Transformed y coordinate.
-
-    """
-    new_x, new_y = transform(old_proj, new_proj, x, y)
-
-    return new_x, new_y
 
 
 def pairwise(iterable):
