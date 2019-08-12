@@ -32,12 +32,12 @@ BASE_PATH = CONFIG['file_locations']['base_path']
 def generate_receivers(cell_area, simulation_parameters, grid):
     """
 
-    Generate receiver locations as points within the cell area. 
-    
-    Sampling points can either be generated on a grid (grid=1) 
-    or more efficiently between the transmitter and the edge 
-    of the cell (grid=0) area. 
-    
+    Generate receiver locations as points within the cell area.
+
+    Sampling points can either be generated on a grid (grid=1)
+    or more efficiently between the transmitter and the edge
+    of the cell (grid=0) area.
+
     Parameters
     ----------
     cell_area : polygon
@@ -45,7 +45,7 @@ def generate_receivers(cell_area, simulation_parameters, grid):
     simulation_parameters : dict
         Contains all necessary simulation parameters.
     grid : int
-        Binary indicator to dictate receiver generation type. 
+        Binary indicator to dictate receiver generation type.
 
     Output
     ------
@@ -151,7 +151,7 @@ def obtain_average_values(results, simulation_parameters):
     Output
     ------
     average_cell_results : dict
-        Contains the average value for each cell metric. 
+        Contains the average value for each cell metric.
 
     """
     path_loss_values = []
@@ -182,13 +182,13 @@ def obtain_average_values(results, simulation_parameters):
         else:
             spectral_efficiency_values.append(spectral_efficiency)
 
-        estimated_capacity = result['average_capacity_mbps']
+        estimated_capacity = result['capacity_mbps']
         if estimated_capacity == None:
             estimated_capacity = 0
         else:
             estimated_capacity_values.append(estimated_capacity)
 
-        estimated_capacity_km2 = result['average_capacity_mbps_km2']
+        estimated_capacity_km2 = result['capacity_mbps_km2']
         if estimated_capacity_km2 == None:
             estimated_capacity_km2 = 0
         else:
@@ -201,8 +201,8 @@ def obtain_average_values(results, simulation_parameters):
         'interference': get_average(interference_values),
         'sinr': get_average(sinr_values),
         'spectral_efficiency': get_average(spectral_efficiency_values),
-        'average_capacity_mbps': get_average(estimated_capacity_values),
-        'average_capacity_mbps_km2': get_average(estimated_capacity_values_km2),
+        'capacity_mbps': get_average(estimated_capacity_values),
+        'capacity_mbps_km2': get_average(estimated_capacity_values_km2),
     }
 
     return average_cell_results
@@ -217,7 +217,7 @@ def get_average(data):
     ----------
     data : list
         Contains the list of values we want to average.
-    
+
     Output
     ------
     average : float
@@ -244,7 +244,7 @@ def obtain_percentile_values(results, simulation_parameters):
     Output
     ------
     percentile_cell_results : dict
-        Contains the percentile value for each cell metric. 
+        Contains the percentile value for each cell metric.
 
     """
     percentile = simulation_parameters['percentile']
@@ -277,13 +277,13 @@ def obtain_percentile_values(results, simulation_parameters):
         else:
             spectral_efficiency_values.append(spectral_efficiency)
 
-        estimated_capacity = result['average_capacity_mbps']
+        estimated_capacity = result['capacity_mbps']
         if estimated_capacity == None:
             estimated_capacity = 0
         else:
             estimated_capacity_values.append(estimated_capacity)
 
-        estimated_capacity_km2 = result['average_capacity_mbps_km2']
+        estimated_capacity_km2 = result['capacity_mbps_km2']
         if estimated_capacity_km2 == None:
             estimated_capacity_km2 = 0
         else:
@@ -308,10 +308,10 @@ def obtain_percentile_values(results, simulation_parameters):
         'spectral_efficiency': np.percentile(
             spectral_efficiency_values, percentile
         ),
-        'percentile_capacity_mbps': np.percentile(
+        'capacity_mbps': np.percentile(
             estimated_capacity_values, percentile
         ),
-        'percentile_capacity_mbps_km2': np.percentile(
+        'capacity_mbps_km2': np.percentile(
             estimated_capacity_values_km2, percentile
         ),
     }
@@ -334,7 +334,7 @@ def obtain_threshold_values_choice(results, simulation_parameters):
     Output
     ------
     matching_result : float
-        Contains the chosen percentile value based on the input data. 
+        Contains the chosen percentile value based on the input data.
 
     """
     sinr_values = []
@@ -370,7 +370,7 @@ def convert_results_geojson(data):
     ----------
     data : list of dicts
         Contains all results ready to be written.
-    
+
     Outputs
     -------
     output : list of dicts
@@ -396,11 +396,11 @@ def convert_results_geojson(data):
                 'spectral_efficiency': float(
                     datum['spectral_efficiency']
                 ),
-                'average_capacity_mbps': float(
-                    datum['average_capacity_mbps']
+                'capacity_mbps': float(
+                    datum['capacity_mbps']
                 ),
-                'average_capacity_mbps_km2': float(
-                    datum['average_capacity_mbps_km2']
+                'capacity_mbps_km2': float(
+                    datum['capacity_mbps_km2']
                 ),
                 },
             }
@@ -455,27 +455,27 @@ def write_full_results(data, environment, cell_radius, frequency,
     results_file = open(full_path, 'w', newline='')
     results_writer = csv.writer(results_file)
     results_writer.writerow(
-        (   
-            'environment', 
-            'inter_site_distance_m', 
-            'sites_per_km2', 
-            'frequency_GHz', 
-            'bandwidth_MHz', 
-            'number_of_sectors', 
-            'generation', 
-            'mast_height_m', 
-            'receiver_x', 
-            'receiver_y', 
-            'path_loss_dB', 
-            'r_model', 
-            'received_power_dB', 
-            'interference_dB', 
-            'i_model', 
-            'noise_dB', 
-            'sinr_dB', 
-            'spectral_efficiency_bps_hz', 
-            'average_capacity_mbps', 
-            'average_capacity_mbps_km2'
+        (
+            'environment',
+            'inter_site_distance_m',
+            'sites_per_km2',
+            'frequency_GHz',
+            'bandwidth_MHz',
+            'number_of_sectors',
+            'generation',
+            'mast_height_m',
+            'receiver_x',
+            'receiver_y',
+            'path_loss_dB',
+            'r_model',
+            'received_power_dB',
+            'interference_dB',
+            'i_model',
+            'noise_dB',
+            'sinr_dB',
+            'spectral_efficiency_bps_hz',
+            'capacity_mbps',
+            'capacity_mbps_km2'
         )
     )
 
@@ -499,13 +499,13 @@ def write_full_results(data, environment, cell_radius, frequency,
             row['noise'],
             row['sinr'],
             row['spectral_efficiency'],
-            row['average_capacity_mbps'],
-            row['average_capacity_mbps_km2'],
+            row['capacity_mbps'],
+            row['capacity_mbps_km2'],
             ))
 
 
 def write_lookup_table(results, environment, cell_radius,
-    frequency, bandwidth, generation, mast_height, 
+    frequency, bandwidth, generation, mast_height,
     directory, filename, simulation_parameters):
     """
 
@@ -554,21 +554,21 @@ def write_lookup_table(results, environment, cell_radius,
         lut_writer.writerow(
             (
                 'results_type',
-                'environment', 
-                'inter_site_distance_m', 
-                'sites_per_km2', 
-                'frequency_GHz', 
-                'bandwidth_MHz', 
-                'number_of_sectors', 
-                'generation', 
-                'mast_height_m', 
-                'path_loss_dB', 
-                'received_power_dBm', 
-                'interference_dBm', 
-                'sinr_dB', 
-                'spectral_efficiency_bps_hz', 
-                'average_capacity_mbps', 
-                'average_capacity_mbps_km2'
+                'environment',
+                'inter_site_distance_m',
+                'sites_per_km2',
+                'frequency_GHz',
+                'bandwidth_MHz',
+                'number_of_sectors',
+                'generation',
+                'mast_height_m',
+                'path_loss_dB',
+                'received_power_dBm',
+                'interference_dBm',
+                'sinr_dB',
+                'spectral_efficiency_bps_hz',
+                'capacity_mbps',
+                'capacity_mbps_km2',
             )
         )
     else:
@@ -591,8 +591,8 @@ def write_lookup_table(results, environment, cell_radius,
             results['interference'],
             results['sinr'],
             results['spectral_efficiency'],
-            results['average_capacity_mbps'],
-            results['average_capacity_mbps_km2'] * sectors,
+            results['capacity_mbps'],
+            results['capacity_mbps_km2'] * sectors,
         )
     )
 
@@ -602,7 +602,7 @@ def write_lookup_table(results, environment, cell_radius,
 def write_shapefile(data, filename):
     """
 
-    Write geojson data to shapefile. 
+    Write geojson data to shapefile.
 
     """
     # Translate props to Fiona sink schema
@@ -635,11 +635,11 @@ def write_shapefile(data, filename):
             sink.write(datum)
 
 
-def run_simulator(simulation_parameters, spectrum_portfolio, 
+def run_simulator(simulation_parameters, spectrum_portfolio,
     mast_heights, cell_radii, modulation_and_coding_lut):
     """
 
-    Function to run the simulator and all associated modules. 
+    Function to run the simulator and all associated modules.
 
     """
 
@@ -662,7 +662,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
 
     for environment in environments:
         for cell_radius in cell_radii[environment]:
-            print(cell_radius)
+
             print('--working on {}: {}'.format(environment, cell_radius))
 
             transmitter, interfering_transmitters, cell_area, interfering_cell_areas = \
@@ -677,73 +677,75 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
                 for mast_height in mast_heights:
 
                     MANAGER = SimulationManager(
-                        transmitter, interfering_transmitters, receivers, cell_area, SIMULATION_PARAMETERS
+                        transmitter, interfering_transmitters, receivers,
+                        cell_area, SIMULATION_PARAMETERS
                         )
-                    
-                    # results = MANAGER.estimate_link_budget(
-                    #     frequency, bandwidth, generation, mast_height,
-                    #     environment,
-                    #     MODULATION_AND_CODING_LUT,
-                    #     SIMULATION_PARAMETERS
-                    #     )
 
-                    # folder = os.path.join(BASE_PATH, 'full_tables')
-                    # filename = 'full_capacity_lut_{}_{}_{}_{}.csv'.format(
-                    #     environment, cell_radius, frequency, mast_height)
-                    
-                    # write_full_results(results, environment, cell_radius, 
-                    #     frequency, bandwidth, generation, mast_height, 
-                    #     folder, filename, simulation_parameters)
+                    results = MANAGER.estimate_link_budget(
+                        frequency, bandwidth, generation, mast_height,
+                        environment,
+                        MODULATION_AND_CODING_LUT,
+                        SIMULATION_PARAMETERS
+                        )
 
-                    # average_cell_results = obtain_average_values(
-                    #     results, simulation_parameters
-                    #     )
+                    folder = os.path.join(BASE_PATH, 'full_tables')
+                    filename = 'full_capacity_lut_{}_{}_{}_{}.csv'.format(
+                        environment, cell_radius, frequency, mast_height)
 
-                    # write_lookup_table(average_cell_results, environment, 
-                    #     cell_radius, frequency, bandwidth, generation, 
-                    #     mast_height, BASE_PATH, 
-                    #     'average_capacity_lut.csv', 
-                    #     simulation_parameters
-                    # )
+                    write_full_results(results, environment, cell_radius,
+                        frequency, bandwidth, generation, mast_height,
+                        folder, filename, simulation_parameters)
 
-                    # percentile_cell_results = obtain_percentile_values(
-                    #     results, simulation_parameters
-                    # )
+                    average_cell_results = obtain_average_values(
+                        results, simulation_parameters
+                        )
 
-                    # write_lookup_table(average_cell_results, environment, 
-                    #     cell_radius, frequency, bandwidth, generation, 
-                    #     mast_height, BASE_PATH, 
-                    #     '_capacity_lut.csv', 
-                    #     simulation_parameters
-                    # )
+                    write_lookup_table(average_cell_results, environment,
+                        cell_radius, frequency, bandwidth, generation,
+                        mast_height, BASE_PATH,
+                        'average_capacity_lut.csv',
+                        simulation_parameters
+                    )
 
-                    # ## write out as shapes, if desired, for debugging purposes
-                    # geojson_receivers = convert_results_geojson(results)
+                    percentile_cell_results = obtain_percentile_values(
+                        results, simulation_parameters
+                    )
 
-                    # write_shapefile(
-                    #     geojson_receivers, 
-                    #     'receivers_{}.shp'.format(cell_radius)
-                    #     )
-                    
-                    # write_shapefile(
-                    #     transmitter, 
-                    #     'transmitter_{}.shp'.format(cell_radius)
-                    # )
-                    
-                    # write_shapefile(
-                    #     cell_area, 
-                    #     'cell_area_{}.shp'.format(cell_radius)
-                    # )
-                    
-                    # write_shapefile(
-                    #     interfering_transmitters, 
-                    #     'interfering_transmitters_{}.shp'.format(cell_radius)
-                    # )
+                    write_lookup_table(percentile_cell_results, environment,
+                        cell_radius, frequency, bandwidth, generation,
+                        mast_height, BASE_PATH,
+                        'percentile_{}_capacity_lut.csv'.format(
+                            simulation_parameters['percentile']),
+                        simulation_parameters
+                    )
 
-                    # write_shapefile(
-                    #     interfering_cell_areas, 
-                    #     'interfering_cell_areas_{}.shp'.format(cell_radius)
-                    # )
+                    ## write out as shapes, if desired, for debugging purposes
+                    geojson_receivers = convert_results_geojson(results)
+
+                    write_shapefile(
+                        geojson_receivers,
+                        'receivers_{}.shp'.format(cell_radius)
+                        )
+
+                    write_shapefile(
+                        transmitter,
+                        'transmitter_{}.shp'.format(cell_radius)
+                    )
+
+                    write_shapefile(
+                        cell_area,
+                        'cell_area_{}.shp'.format(cell_radius)
+                    )
+
+                    write_shapefile(
+                        interfering_transmitters,
+                        'interfering_transmitters_{}.shp'.format(cell_radius)
+                    )
+
+                    write_shapefile(
+                        interfering_cell_areas,
+                        'interfering_cell_areas_{}.shp'.format(cell_radius)
+                    )
 
 
 if __name__ == '__main__':
@@ -764,7 +766,6 @@ if __name__ == '__main__':
         'rx_height': 1.5,
         'network_load': 50,
         'percentile': 50,
-        'desired_transmitter_density': 10,
         'sectorisation': 3,
         'overbooking_factor': 50,
     }
