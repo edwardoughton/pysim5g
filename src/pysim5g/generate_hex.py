@@ -70,10 +70,10 @@ def calculate_polygons(startx, starty, endx, endy, radius):
     """
 
     Calculate a grid of hexagon coordinates of the given radius
-    given lower-left and upper-right coordinates. Returns a 
+    given lower-left and upper-right coordinates. Returns a
     list of lists containing 6 tuples of x, y point coordinates.
     These can be used to construct valid regular hexagonal polygons
-    Projected coordinates are advised. 
+    Projected coordinates are advised.
 
     Parameters
     ----------
@@ -91,9 +91,9 @@ def calculate_polygons(startx, starty, endx, endy, radius):
     Outputs
     -------
     polygons : list of lists
-        A list containing multiple polygons. Each individual polygon 
-        is a list of tuple coordinates.  
-    
+        A list containing multiple polygons. Each individual polygon
+        is a list of tuple coordinates.
+
     """
     # calculate side length given radius
     sl = (2 * radius) * math.tan(math.pi / 6)
@@ -131,10 +131,10 @@ def calculate_polygons(startx, starty, endx, endy, radius):
 
         if row % 2 == 0:
             startx = origx + xoffset
-        
+
         else:
             startx = origx
-        
+
         while startx < endx:
             p1x = startx
             p1y = starty + p
@@ -158,10 +158,10 @@ def calculate_polygons(startx, starty, endx, endy, radius):
                 (p1x, p1y)]
 
             polygons.append(poly)
-        
+
             counter += 1
             startx += w
-        
+
         starty += yoffset
         row += 1
 
@@ -188,7 +188,7 @@ def find_closest_cell_areas(hexagons, geom_shape):
     cell_area : List of dicts
         Contains the geojson cell area for the transmitter.
     interfering_cell_areas : List of dicts
-        Contains the geojson interfering cell areas. 
+        Contains the geojson interfering cell areas.
 
     """
     idx = index.Index()
@@ -237,14 +237,14 @@ def find_site_locations(cell_area, interfering_cell_areas):
     cell_area : List of dicts
         Contains the geojson cell area for the transmitter.
     interfering_cell_areas : List of dicts
-        Contains the geojson interfering cell areas. 
+        Contains the geojson interfering cell areas.
 
     Outputs
     -------
     transmitter : List of dicts
         Contains the geojson site location for the transmitter.
     interfering_cell_areas : List of dicts
-        Contains the geojson site locations for interfering cells. 
+        Contains the geojson site locations for interfering cells.
 
     """
     cell_area_site = Polygon(
@@ -291,8 +291,8 @@ def generate_cell_areas(point, cell_radius):
     cell_area : List of dicts
         Contains the geojson cell area for the transmitter.
     interfering_cell_areas : List of dicts
-        Contains the geojson interfering cell areas. 
-        
+        Contains the geojson interfering cell areas.
+
     """
     geom_shape = shape(point['geometry'])
 
@@ -342,11 +342,11 @@ def produce_sites_and_cell_areas(unprojected_point, cell_radius):
     Outputs
     -------
     transmitter : List of dicts
-        Contains a geojson dict for the transmitter site.    
+        Contains a geojson dict for the transmitter site.
     interfering_transmitters : List of dicts
         Contains multiple geojson dicts for the interfering transmitter sites.
     cell_area : List of dicts
-        Contains a geojson dict for the transmitter cell area.   
+        Contains a geojson dict for the transmitter cell area.
     interfering_cell_areas : List of dicts
         Contains multiple geojson dicts for the interfering transmitter cell
         areas.
@@ -376,7 +376,7 @@ def write_shapefile(data, filename):
     Outputs
     -------
     filename.shp : Shapefile
-        Shapefile of desired data for writing.    
+        Shapefile of desired data for writing.
 
     """
     prop_schema = []
