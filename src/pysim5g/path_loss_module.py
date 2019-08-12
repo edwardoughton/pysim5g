@@ -4,46 +4,61 @@ Path Loss Calculator
 Author: Edward Oughton
 Date: April 2019
 
-An implementation of a path loss calculator utilising (i) a Free Space model, (ii) the
-Extended Hata model (150 MHz - 3 GHz) as found in the following documents:
+An implementation of a path loss calculator utilising (i) a Free Space model, 
+(ii) the Extended Hata model (150 MHz - 3 GHz) as found in the following 
+documents:
 
 ITU-R SM.2028-2
-Monte Carlo simulation methodology for the use in sharing and compatibility studies between
-different radio services or systems.
+Monte Carlo simulation methodology for the use in sharing and compatibility 
+studies between different radio services or systems.
 
 """
 import numpy as np
 from math import pi, sqrt
 
 
-def path_loss_calculator(frequency, distance, ant_height, ant_type, building_height,
-    street_width, settlement_type, type_of_sight, ue_height, above_roof, indoor,
-    seed_value, iterations):
+def path_loss_calculator(frequency, distance, ant_height, ant_type, 
+    building_height, street_width, settlement_type, type_of_sight, 
+    ue_height, above_roof, indoor, seed_value, iterations):
     """
     Calculate the correct path loss given a range of critera.
 
     Parameters
     ----------
     frequency : float
-        Frequency band given in GHz (f)
+        Frequency band given in GHz. 
     distance : float
-        Distance between the transmitter and receiver (d) in km.
+        Distance between the transmitter and receiver in km.
     ant_height:
-        Height of the antenna (hBS)
+        Height of the antenna.
     ant_type : string
-        Indicates the type of cell (hotspot, micro, macro)
-    settlement_type : string
-        Gives the type of settlement (urban, suburban or rural)
-    type_of_sight : string
-        Indicates whether the path is (Non) Line of Sight (LOS or NLOS)
-    ue_height : float
-        Height of the User Equipment (hUT)
+        Indicates the type of cell (hotspot, micro, macro).
+    building_height : int
+        Height of surrounding buildings in meters (m).
     street_width : float
-        Width of street (W)
+        Width of street in meters (m). 
+    settlement_type : string
+        Gives the type of settlement (urban, suburban or rural).
+    type_of_sight : string
+        Indicates whether the path is (Non) Line of Sight (LOS or NLOS).
+    ue_height : float
+        Height of the User Equipment.
+    above_roof : int
+        Indicates if the propagation line is above or below building roofs.
+        Above = 1, below = 0.
+    indoor : binary
+        Indicates if the user is indoor (True) or outdoor (False).
+    seed_value : int
+        Dictates repeatable random number generation.
+    iterations : int
+        Specifies how many iterations a specific calculation should be run for.
 
     Returns
     -------
-    float: path_loss (dB)
+    path_loss : float
+        Path loss in decibels (dB)
+    model : string
+        Type of model used for path loss estimation.
 
     """
     if 0.03 < frequency <= 3:
@@ -53,11 +68,14 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type, building_hei
         )
 
         extended_hata_path_loss = extended_hata(
-            frequency, distance, ant_height, ant_type, building_height, street_width,
-            settlement_type, type_of_sight, ue_height, above_roof, seed_value, iterations
+            frequency, distance, ant_height, ant_type, building_height, 
+            street_width, settlement_type, type_of_sight, ue_height, 
+            above_roof, seed_value, iterations
         )
 
-        path_loss, model = determine_path_loss(free_space_path_loss, extended_hata_path_loss)
+        path_loss, model = determine_path_loss(
+            free_space_path_loss, extended_hata_path_loss
+        )
 
     elif 3 <= frequency < 6:
 
@@ -72,13 +90,16 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type, building_hei
             "frequency of {} is NOT within correct range".format(frequency)
         )
 
-    path_loss = path_loss + outdoor_to_indoor_path_loss(frequency, indoor, seed_value)
+    path_loss = path_loss + outdoor_to_indoor_path_loss(
+        frequency, indoor, seed_value
+    )
 
     return round(path_loss, 2), model
 
 
 def determine_path_loss(free_space_path_loss, extended_hata_path_loss):
     """
+
     Model guidance states that 'when L [median path loss] is below
     the free space attenuation for the same distance, the free space
     attenuation is used instead.'
@@ -89,6 +110,13 @@ def determine_path_loss(free_space_path_loss, extended_hata_path_loss):
         The path loss resulting from the use of the Free Space model (dB).
     extended_hata_path_loss : int
         The path loss resulting from the use of the Extended Hata model (dB).
+
+    Returns
+    -------
+    path_loss : float
+        Path loss in decibels (dB)
+    model : string
+        Type of model used for path loss estimation.
 
     """
     if extended_hata_path_loss < free_space_path_loss:
@@ -105,7 +133,8 @@ def determine_path_loss(free_space_path_loss, extended_hata_path_loss):
     return path_loss, model
 
 
-def free_space(frequency, distance, ant_height, ue_height, seed_value, iterations):
+def free_space(frequency, distance, ant_height, ue_height, 
+    seed_value, iterations):
     """
     Implements the Free Space path loss model.
 
@@ -113,7 +142,7 @@ def free_space(frequency, distance, ant_height, ue_height, seed_value, iteration
     ----------
     frequency : int
         Carrier band (f) required in MHz.
-    Distance : int
+    distance : int
         Distance (d) between transmitter and receiver (km).
     ant_height : int
         Transmitter antenna height (h1) (m, above ground).
@@ -121,6 +150,11 @@ def free_space(frequency, distance, ant_height, ue_height, seed_value, iteration
         Receiver antenna height (h2) (m, above ground).
     sigma : int
         Variation in path loss (dB) which is 2.5dB for free space.
+    
+    Returns
+    -------
+    path_loss : float
+        Path loss in decibels (dB)
 
     """
     #model requires frequency in MHz rather than GHz.
@@ -128,7 +162,9 @@ def free_space(frequency, distance, ant_height, ue_height, seed_value, iteration
     #model requires distance in kilometers rather than meters.
     distance = distance/1000
 
-    random_variation = generate_log_normal_dist_value(frequency, 1, 2.5, iterations, seed_value)
+    random_variation = generate_log_normal_dist_value(
+        frequency, 1, 2.5, iterations, seed_value
+    )
 
     path_loss = (
         32.4 + 10*np.log10((((ant_height - ue_height)/1000)**2 + \
@@ -148,7 +184,7 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
     ----------
     frequency : int
         Carrier band (f) required in MHz.
-    Distance : int
+    distance : int
         Distance (d) between transmitter and receiver (km).
     ant_height : int
         Transmitter antenna height (h1) (m, above ground).
@@ -161,6 +197,11 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
     sigma : int
         Variation in path loss (dB)
 
+    Returns
+    -------
+    path_loss : float
+        Path loss in decibels (dB)
+        
     """
     #model requires frequency in MHz rather than GHz.
     frequency = frequency*1000
@@ -190,7 +231,8 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
         raise ValueError('Distance over 100km not compliant')
 
     ###PART 1####
-    #Determine initial path loss according to distance, frequency and environment.
+    #Determine initial path loss according to distance, frequency 
+    # and environment.
     if distance < 0.04:
 
         path_loss = (
@@ -286,14 +328,19 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
     #determine variation in path loss using stochastic component
     if distance <= 0.04:
 
-        path_loss = path_loss + generate_log_normal_dist_value(frequency, 1, 3.5, iterations, seed_value)
+        path_loss = path_loss + generate_log_normal_dist_value(
+            frequency, 1, 3.5, iterations, seed_value
+        )
 
     elif 0.04 < distance <= 0.1:
 
         if above_roof == 1:
 
             sigma = (3.5 + ((12-3.5)/0.1-0.04) * (distance - 0.04))
-            random_quantity = generate_log_normal_dist_value(frequency, 1, sigma, iterations, seed_value)
+            random_quantity = generate_log_normal_dist_value(
+                frequency, 1, sigma, iterations, seed_value
+            )
+
             path_loss = (
                 path_loss + random_quantity
             )
@@ -301,39 +348,56 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
         elif above_roof == 0:
 
             sigma = (3.5 + ((17-3.5)/0.1-0.04) * (distance - 0.04))
-            random_quantity = generate_log_normal_dist_value(frequency, 1, sigma, iterations, seed_value)
+            random_quantity = generate_log_normal_dist_value(
+                frequency, 1, sigma, iterations, seed_value
+            )
+
             path_loss = (
                 path_loss + random_quantity
             )
 
         else:
-            raise ValueError('Could not determine if cell is above or below roof line')
+            raise ValueError(
+                'Could not determine if cell is above or below roof line'
+            )
 
     elif 0.1 < distance <= 0.2:
 
         if above_roof == 1:
 
-            random_quantity = generate_log_normal_dist_value(frequency, 1, 12, iterations, seed_value)
+            random_quantity = generate_log_normal_dist_value(
+                frequency, 1, 12, iterations, seed_value
+            )
+
             path_loss = (
                 path_loss + random_quantity
             )
 
         elif above_roof == 0:
 
-            random_quantity = generate_log_normal_dist_value(frequency, 1, 17, iterations, seed_value)
+            random_quantity = generate_log_normal_dist_value(
+                frequency, 1, 17, iterations, seed_value
+            )
+            
             path_loss = (
                 path_loss + random_quantity
             )
 
         else:
-            raise ValueError('Could not determine if cell is above or below roof line')
+            raise ValueError(
+                'Could not determine if cell is above or below roof line'
+            )
 
     elif 0.2 < distance <= 0.6:
 
         if above_roof == 1:
 
             sigma = (12 + ((9-12)/0.6-0.2) * (distance - 0.02))
-            random_quantity = generate_log_normal_dist_value(frequency, 1, sigma, iterations, seed_value)
+            
+            random_quantity = generate_log_normal_dist_value(
+                frequency, 1, sigma, iterations, seed_value
+            )
+            
             path_loss = (
                 path_loss + random_quantity
             )
@@ -342,18 +406,24 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
 
             sigma = (17 + (9-17) / (0.6-0.2) * (distance - 0.02))
 
-            random_quantity = generate_log_normal_dist_value(frequency, 1, sigma, iterations, seed_value)
+            random_quantity = generate_log_normal_dist_value(
+                frequency, 1, sigma, iterations, seed_value
+            )
 
             path_loss = (
                 path_loss + random_quantity
             )
 
         else:
-            raise ValueError('Could not determine if cell is above or below roof line')
+            raise ValueError(
+                'Could not determine if cell is above or below roof line'
+            )
 
     elif 0.6 < distance:
 
-        random_quantity = generate_log_normal_dist_value(frequency, 1, 12, iterations, seed_value)
+        random_quantity = generate_log_normal_dist_value(
+            frequency, 1, 12, iterations, seed_value
+        )
 
         path_loss = (
             path_loss + random_quantity
@@ -362,18 +432,44 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
     return round(path_loss, 2)
 
 
-def uma_nlos_optional(frequency, distance, ant_height, ue_height, seed_value, iterations):
+def uma_nlos_optional(frequency, distance, ant_height, ue_height, 
+    seed_value, iterations):
     """
+
     UMa NLOS / Optional from ETSI TR 138.901 / 3GPP TR 38.901
+
+    Parameters
+    ----------
+    frequency : int
+        Carrier band (f) required in MHz.
+    distance : int
+        Distance (d) between transmitter and receiver (km).
+    ant_height : int
+        Transmitter antenna height (h1) (m, above ground).
+    ue_height : int
+        Receiver antenna height (h2) (m, above ground).
+    sigma : int
+        Variation in path loss (dB) which is 2.5dB for free space.
+    seed_value : int
+        Dictates repeatable random number generation.
+    iterations : int
+        Specifies iterations for a specific calculation.
+
+    Returns
+    -------
+    path_loss : float
+        Path loss in decibels (dB)
 
     """
     distance_3d = sqrt((distance)**2 + (ant_height - ue_height)**2)
 
     path_loss = 32.4 + 20*np.log10(frequency) + 30*np.log10(distance_3d)
 
-    random_variation = generate_log_normal_dist_value(frequency, 1, 7.8, iterations, seed_value)
+    random_variation = generate_log_normal_dist_value(
+        frequency, 1, 7.8, iterations, seed_value
+    )
 
-    return round(path_loss + random_variation,2)
+    return round(path_loss + random_variation, 2)
 
 
 def generate_log_normal_dist_value(frequency, mu, sigma, draws, seed_value):
@@ -384,9 +480,9 @@ def generate_log_normal_dist_value(frequency, mu, sigma, draws, seed_value):
     https://stackoverflow.com/questions/51609299/python-np-lognormal-gives-infinite-
     results-for-big-average-and-st-dev
 
-    The parameters mu and sigma in np.random.lognormal are not the mean and STD of
-    the lognormal distribution. They are the mean and STD of the underlying normal
-    distribution.
+    The parameters mu and sigma in np.random.lognormal are not the mean 
+    and STD of the lognormal distribution. They are the mean and STD 
+    of the underlying normal distribution.
 
     Parameters
     ----------
@@ -396,6 +492,11 @@ def generate_log_normal_dist_value(frequency, mu, sigma, draws, seed_value):
         Standard deviation of the desired distribution.
     draws : int
         Number of required values.
+
+    Returns
+    -------
+    random_variation : float
+        Mean of the random variation over the specified itations. 
 
     """
     if seed_value == None:
@@ -415,9 +516,22 @@ def generate_log_normal_dist_value(frequency, mu, sigma, draws, seed_value):
 
 def outdoor_to_indoor_path_loss(frequency, indoor, seed_value):
     """
+
     ITU-R M.1225 suggests building penetration loss for shadow fading can be modelled
     as a log-normal distribution with a mean and  standard deviation of 12 dB and
     8 dB respectively.
+
+    frequency : int
+        Carrier band (f) required in MHz.
+    indoor : binary
+        Indicates if the user is indoor (True) or outdoor (False).
+    seed_value : int
+        Dictates repeatable random number generation.
+
+    Returns
+    -------
+    path_loss : float
+        Outdoor to indoor path loss in decibels (dB)
 
     """
     if indoor:
