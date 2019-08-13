@@ -125,6 +125,7 @@ class SimulationManager(object):
             )
 
             results.append({
+                'id': receiver.id,
                 'path_loss': path_loss,
                 'r_model': r_model,
                 'type_of_sight': type_of_sight,

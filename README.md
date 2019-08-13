@@ -52,7 +52,11 @@ To build the documentation:
 
 The run the tests:
 
-    python setup.py test
+    conda install pytest
+
+Followed by:
+
+    pytest
 
 Background and funding
 ======================
