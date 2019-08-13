@@ -34,27 +34,13 @@ Activate it (run each time you switch projects)::
 
     activate pysim5g
 
-For development purposes:
+First, install required packages including `Fiona`, `shapely`, `numpy`, `rtree` and `pyproj`:
 
-Run this command once per machine:
+    conda install fiona shapely numpy rtree pyproj
+
+For development purposes, run this command once per machine:
 
     python setup.py develop
-
-Windows users may need to additionally install `Shapely` as follows:
-
-    conda install shapely
-
-Install `Fiona` using:
-
-    conda install fiona
-
-Install `Rtree` using:
-
-    conda install -c conda-forge rtree
-
-Install `pyproj` using:
-
-    conda install -c conda-forge pyproj
 
 To install pysim5g permanently:
 
@@ -71,7 +57,7 @@ The run the tests:
 Background and funding
 ======================
 
-The **Python SImulator for Modelling 5G (PySIM5G)** was funded by the the
+The **Python SImulator for Modelling 5G (PySIM5G)** was funded by the
 UK [Digital Catapult's](http://www.digicatapult.org.uk) ESPRC-funded Researcher in Residence
 programme.
 
@@ -80,7 +66,7 @@ Contributors
 - Edward J. Oughton (Oxford)
 - Kostas Kotsaros (Digital Catapult)
 - Fariborz Entezami (Digital Catapult)
-- Tom Russell (Oxford)
 - Dritan Kaleshi (Digital Catapult)
 - Catarina Fernandes (Digital Catapult)
+- Tom Russell (Oxford)
 - Jon Crowcroft (Cambridge)
