@@ -7,7 +7,7 @@ from pytest import fixture
 from shapely.geometry import Point, LineString, shape, mapping
 import os
 from collections import OrderedDict
-from src.pysim5g.system_simulator import SimulationManager
+from pysim5g.system_simulator import SimulationManager
 
 
 @pytest.fixture

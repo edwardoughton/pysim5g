@@ -12,7 +12,7 @@ from itertools import tee
 from pyproj import Proj, transform
 from collections import OrderedDict
 
-from src.pysim5g.path_loss_module import path_loss_calculator
+from pysim5g.path_loss_module import path_loss_calculator
 
 np.random.seed(42)
 
