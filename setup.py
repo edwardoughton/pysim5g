@@ -1,96 +1,68 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# -*- encoding: utf-8 -*-
+"""Setup package
 """
-    Setup file for pysim5g.
+from glob import glob
+from os.path import basename, splitext
 
-    This file was generated with PyScaffold 2.5.7, a tool that easily
-    puts up a scaffold for your new Python project. Learn more under:
-    http://pyscaffold.readthedocs.org/
-
-"""
-import os
-import shutil
-import sys
-import getpass
-import re
-import zipfile
-from datetime import date
+from setuptools import find_packages
 from setuptools import setup
 
 
-def setup_package():
-    needs_sphinx = {'build_sphinx', 'upload_docs'}.intersection(sys.argv)
-    sphinx = ['sphinx'] if needs_sphinx else []
-    setup(setup_requires=['six', 'pyscaffold>=3.0a0,<3.1a0'] + sphinx,
-          use_pyscaffold=True)
+def readme():
+    """Read README contents
+    """
+    with open('README.md') as f:
+        return f.read()
 
 
-def get_raw_data():
-    import pysftp
-
-    print('')
-    reply = str(input('Would you like to download the raw data from the smif ftp server? (y/n): ')).lower().strip()
-
-    if reply[:1] != 'y':
-        exit()
-
-    folder = os.path.join('data', 'raw')
-
-    # Clear raw data directory
-    for the_file in os.listdir(folder):
-        file_path = os.path.join(folder, the_file)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path): shutil.rmtree(file_path)
-        except Exception as e:
-            print(e)
-
-    # Download file from server
-    user = input("Username:")
-    passwd = getpass.getpass("Password for " + user + ":")
-
-    cnopts = pysftp.CnOpts()
-    cnopts.hostkeys = None
-
-    with pysftp.Connection('ceg-itrc.ncl.ac.uk', username=user, password=passwd, cnopts=cnopts) as sftp:
-        with sftp.cd('data/digital_communications'):
-
-            # Get list of files, sort by date, ask user to choose a file and download to data/raw
-            ftp_files = sftp.listdir()
-
-            datafiles = []
-            for datafile in ftp_files:
-                m = re.search("([0-9]{4})\_([0-9]{2})\_([0-9]{2})", datafile)
-                datafiles.append(
-                    (datafile, date(int(m.group(1)), int(m.group(2)), int(m.group(3))))
-                )
-
-            datafiles = sorted(datafiles, key=lambda datafile: datafile[1])
-
-            print('')
-            print('Available datafiles:')
-            for idx, datafile in enumerate(datafiles):
-                print(str(idx) + ': ' + datafile[0])
-
-            reply = str(input('Choose a file by number, or press enter to download latest: ')).lower().strip()
-
-            if (reply == ''):
-                reply = len(datafile)
-
-            print('Downloading ' + datafiles[int(reply)][0] + ' ...')
-            sftp.get(datafiles[int(reply)][0], localpath=os.path.join(folder, 'raw.zip'))
-
-    # Unzip the file
-    print('Extracting files ...')
-    zip_ref = zipfile.ZipFile(os.path.join(folder, 'raw.zip'), 'r')
-    zip_ref.extractall(folder)
-    zip_ref.close()
-    print('Done')
-
-
-if __name__ == "__main__":
-    if 'get_raw_data' in sys.argv:
-        get_raw_data()
-    else:
-        setup_package()
+setup(
+    name='pysim5g',
+    use_scm_version=True,
+    license='MIT License',
+    description='5G simulator',
+    long_description=readme(),
+    long_description_content_type="text/markdown",
+    author='Ed Oughton',
+    author_email='edward.oughton@ouce.ox.ac.uk',
+    url='https://github.com/edwardoughton/pysim5g',
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
+    py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
+    include_package_data=True,
+    zip_safe=False,
+    classifiers=[
+        # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
+        'Development Status :: 1 - Planning',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Topic :: Scientific/Engineering :: GIS',
+        'Topic :: Utilities',
+    ],
+    keywords=[
+        # eg: 'keyword1', 'keyword2', 'keyword3',
+    ],
+    setup_requires=[
+        'setuptools_scm'
+    ],
+    install_requires=[
+        # eg: 'aspectlib==1.1.1', 'six>=1.7',
+        'fiona>=1.7.13',
+        'shapely>=1.6',
+        'numpy',
+        'rtree>=0.8',
+        'pyproj>=2',
+    ],
+    extras_require={
+        # eg:
+        #   'rst': ['docutils>=0.11'],
+        #   ':python_version=="2.6"': ['argparse'],
+    },
+    entry_points={
+        'console_scripts': [
+            # eg: 'snkit = snkit.cli:main',
+        ]
+    },
+)
