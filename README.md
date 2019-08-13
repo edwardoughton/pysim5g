@@ -5,9 +5,9 @@ python simulator for modelling 5G (pysim5g)
 
 Description
 ===========
-**pysim5g** is a software tool, based on the Monte-Carlo simulation method, for simulation modelling of 5G in the sub-6GHz spectrum bands.
+**pysim5g** is a software tool, based on the Monte-Carlo method, for simulation modelling of 5G.
 
-The simulator tool allows statistical modelling of different radio interference scenarios for assessing system-level performance of both 4G and 5G spectrum bands.
+Statistical modelling can be performed under different radio interference scenarios for assessing system-level performance of 4G and 5G co-existence in the sub-6GHz spectrum bands.
 
 The simulator focuses on quantifying the benefits of (i) ultra-dense networks, (ii) 5G spectral efficiency gains and (iii) the use of both 4G and 5G sub-6GHz spectrum bands. 
 
