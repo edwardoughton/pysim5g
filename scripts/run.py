@@ -19,8 +19,8 @@ from rtree import index
 
 from collections import OrderedDict
 
-from src.pysim5g.generate_hex import produce_sites_and_cell_areas
-from src.pysim5g.system_simulator import SimulationManager
+from pysim5g.generate_hex import produce_sites_and_cell_areas
+from pysim5g.system_simulator import SimulationManager
 
 np.random.seed(42)
 
