@@ -1,6 +1,8 @@
 python simulator for modelling 5G (pysim5g)
 ===========================================
 
+[![Build Status](https://travis-ci.com/edwardoughton/pysim5g.svg?branch=master)](https://travis-ci.com/edwardoughton/pysim5g)
+
 Description
 ===========
 **pysim5g** is a software tool, based on the Monte-Carlo simulation method, for simulation modelling of 5G in the sub-6GHz spectrum bands.
