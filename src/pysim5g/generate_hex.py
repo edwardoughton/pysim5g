@@ -327,7 +327,8 @@ def generate_cell_areas(point, cell_radius):
     return cell_area, interfering_cell_areas
 
 
-def produce_sites_and_cell_areas(unprojected_point, cell_radius):
+def produce_sites_and_cell_areas(unprojected_point, cell_radius, unprojected_crs,
+    projected_crs):
     """
 
     Meta function to produce a set of hex shapes with a specific cell_radius.
@@ -352,72 +353,14 @@ def produce_sites_and_cell_areas(unprojected_point, cell_radius):
         areas.
 
     """
-    point = convert_point_to_projected_crs(unprojected_point, 'EPSG:4326', 'EPSG:27700')
+    point = convert_point_to_projected_crs(unprojected_point, unprojected_crs,
+        projected_crs
+    )
 
     cell_area, interfering_cell_areas = generate_cell_areas(point, cell_radius)
 
-    transmitter, interfering_transmitters = find_site_locations(cell_area, interfering_cell_areas)
+    transmitter, interfering_transmitters = find_site_locations(cell_area,
+        interfering_cell_areas
+    )
 
     return transmitter, interfering_transmitters, cell_area, interfering_cell_areas
-
-
-def write_shapefile(data, filename):
-    """
-
-    Write data to shapefile for visual validation.
-
-    Parameters
-    ----------
-    data : List of dicts
-        Contains geojson dictionaries for writing to .shp.
-    filename : string
-        Desired filename for .shp output
-
-    Returns
-    -------
-    filename.shp : Shapefile
-        Shapefile of desired data for writing.
-
-    """
-    prop_schema = []
-    for name, value in data[0]['properties'].items():
-        fiona_prop_type = next((
-            fiona_type for fiona_type, python_type in \
-                fiona.FIELD_TYPES_MAP.items() if \
-                python_type == type(value)), None
-            )
-
-        prop_schema.append((name, fiona_prop_type))
-
-    sink_driver = 'ESRI Shapefile'
-    sink_crs = {'init': 'epsg:27700'}
-    sink_schema = {
-        'geometry': data[0]['geometry']['type'],
-        'properties': OrderedDict(prop_schema)
-    }
-
-    directory = os.path.join(DATA_INTERMEDIATE, 'test_simulation')
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-    with fiona.open(
-        os.path.join(directory, filename), 'w',
-        driver=sink_driver, crs=sink_crs, schema=sink_schema) as sink:
-        for feature in data:
-            sink.write(feature)
-
-
-if __name__ == '__main__':
-
-    with fiona.open(
-        os.path.join(DATA_RAW, 'crystal_palace_to_mursley.shp'), 'r') as source:
-            unprojected_line = next(iter(source))
-            unprojected_point = unprojected_line['geometry']['coordinates'][0]
-
-    transmitter, interfering_transmitters, cell_area, interfering_cell_areas = \
-        produce_sites_and_cell_areas(unprojected_point, 750)
-
-    write_shapefile(transmitter, 'transmitter.shp')
-    write_shapefile(cell_area, 'cell_area.shp')
-    write_shapefile(interfering_transmitters, 'interfering_transmitters.shp')
-    write_shapefile(interfering_cell_areas, 'interfering_cell_areas.shp')
