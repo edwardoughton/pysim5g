@@ -18,18 +18,6 @@ import pyproj
 
 from collections import OrderedDict
 
-CONFIG = configparser.ConfigParser()
-CONFIG.read(
-    os.path.join(
-        os.path.dirname(__file__),'..','..','scripts','script_config.ini'
-    )
-)
-BASE_PATH = CONFIG['file_locations']['base_path']
-
-DATA_RAW = os.path.join(BASE_PATH, 'raw')
-DATA_INTERMEDIATE = os.path.join(BASE_PATH, 'intermediate')
-
-
 def convert_point_to_projected_crs(point, original_crs, new_crs):
     """
 

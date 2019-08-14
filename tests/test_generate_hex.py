@@ -1,8 +1,6 @@
 import pytest
 from shapely.geometry import shape
-from pysim5g.generate_hex import (
-    produce_sites_and_cell_areas,
-    )
+from pysim5g.generate_hex import produce_sites_and_cell_areas
 
 def test_produce_sites_and_cell_areas(setup_unprojected_point, setup_inter_site_distance,
     setup_unprojected_crs, setup_projected_crs):
