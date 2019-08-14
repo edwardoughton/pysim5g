@@ -14,6 +14,7 @@ from pysim5g.system_simulator import SimulationManager
 def rootdir():
     return os.path.dirname(os.path.abspath(__file__))
 
+
 @fixture(scope='function')
 def setup_transmitter():
     return [{
@@ -91,6 +92,7 @@ def setup_interfering_transmitters():
             }
         }
     ]
+
 
 @fixture(scope='function')
 def setup_cell_area():
@@ -280,3 +282,35 @@ def base_system(setup_transmitter, setup_interfering_transmitters,
         setup_receivers, setup_cell_area, setup_simulation_parameters)
 
     return system
+
+
+@pytest.fixture
+def setup_unprojected_point():
+    return {
+        'type': 'Feature',
+        'geometry': {
+            'type': 'Point',
+            'coordinates': (0, 51.476),
+            },
+        'properties': {
+            'site_id': 'Crystal Palace Radio Tower'
+            }
+    }
+
+
+@pytest.fixture
+def setup_inter_site_distance():
+    return [
+        250,
+        15000,
+    ]
+
+
+@pytest.fixture
+def setup_unprojected_crs():
+    return 'epsg:4326'
+
+
+@pytest.fixture
+def setup_projected_crs():
+    return 'epsg:3857'

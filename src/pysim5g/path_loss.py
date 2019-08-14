@@ -4,12 +4,12 @@ Path Loss Calculator
 Author: Edward Oughton
 Date: April 2019
 
-An implementation of a path loss calculator utilising (i) a Free Space model, 
-(ii) the Extended Hata model (150 MHz - 3 GHz) as found in the following 
+An implementation of a path loss calculator utilising (i) a Free Space model,
+(ii) the Extended Hata model (150 MHz - 3 GHz) as found in the following
 documents:
 
 ITU-R SM.2028-2
-Monte Carlo simulation methodology for the use in sharing and compatibility 
+Monte Carlo simulation methodology for the use in sharing and compatibility
 studies between different radio services or systems.
 
 """
@@ -17,8 +17,8 @@ import numpy as np
 from math import pi, sqrt
 
 
-def path_loss_calculator(frequency, distance, ant_height, ant_type, 
-    building_height, street_width, settlement_type, type_of_sight, 
+def path_loss_calculator(frequency, distance, ant_height, ant_type,
+    building_height, street_width, settlement_type, type_of_sight,
     ue_height, above_roof, indoor, seed_value, iterations):
     """
     Calculate the correct path loss given a range of critera.
@@ -26,7 +26,7 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type,
     Parameters
     ----------
     frequency : float
-        Frequency band given in GHz. 
+        Frequency band given in GHz.
     distance : float
         Distance between the transmitter and receiver in km.
     ant_height:
@@ -36,7 +36,7 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type,
     building_height : int
         Height of surrounding buildings in meters (m).
     street_width : float
-        Width of street in meters (m). 
+        Width of street in meters (m).
     settlement_type : string
         Gives the type of settlement (urban, suburban or rural).
     type_of_sight : string
@@ -68,8 +68,8 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type,
         )
 
         extended_hata_path_loss = extended_hata(
-            frequency, distance, ant_height, ant_type, building_height, 
-            street_width, settlement_type, type_of_sight, ue_height, 
+            frequency, distance, ant_height, ant_type, building_height,
+            street_width, settlement_type, type_of_sight, ue_height,
             above_roof, seed_value, iterations
         )
 
@@ -133,7 +133,7 @@ def determine_path_loss(free_space_path_loss, extended_hata_path_loss):
     return path_loss, model
 
 
-def free_space(frequency, distance, ant_height, ue_height, 
+def free_space(frequency, distance, ant_height, ue_height,
     seed_value, iterations):
     """
     Implements the Free Space path loss model.
@@ -150,7 +150,7 @@ def free_space(frequency, distance, ant_height, ue_height,
         Receiver antenna height (h2) (m, above ground).
     sigma : int
         Variation in path loss (dB) which is 2.5dB for free space.
-    
+
     Returns
     -------
     path_loss : float
@@ -201,7 +201,7 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
     -------
     path_loss : float
         Path loss in decibels (dB)
-        
+
     """
     #model requires frequency in MHz rather than GHz.
     frequency = frequency*1000
@@ -231,7 +231,7 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
         raise ValueError('Distance over 100km not compliant')
 
     ###PART 1####
-    #Determine initial path loss according to distance, frequency 
+    #Determine initial path loss according to distance, frequency
     # and environment.
     if distance < 0.04:
 
@@ -378,7 +378,7 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
             random_quantity = generate_log_normal_dist_value(
                 frequency, 1, 17, iterations, seed_value
             )
-            
+
             path_loss = (
                 path_loss + random_quantity
             )
@@ -393,11 +393,11 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
         if above_roof == 1:
 
             sigma = (12 + ((9-12)/0.6-0.2) * (distance - 0.02))
-            
+
             random_quantity = generate_log_normal_dist_value(
                 frequency, 1, sigma, iterations, seed_value
             )
-            
+
             path_loss = (
                 path_loss + random_quantity
             )
@@ -432,7 +432,7 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
     return round(path_loss, 2)
 
 
-def uma_nlos_optional(frequency, distance, ant_height, ue_height, 
+def uma_nlos_optional(frequency, distance, ant_height, ue_height,
     seed_value, iterations):
     """
 
@@ -480,8 +480,8 @@ def generate_log_normal_dist_value(frequency, mu, sigma, draws, seed_value):
     https://stackoverflow.com/questions/51609299/python-np-lognormal-gives-infinite-
     results-for-big-average-and-st-dev
 
-    The parameters mu and sigma in np.random.lognormal are not the mean 
-    and STD of the lognormal distribution. They are the mean and STD 
+    The parameters mu and sigma in np.random.lognormal are not the mean
+    and STD of the lognormal distribution. They are the mean and STD
     of the underlying normal distribution.
 
     Parameters
@@ -496,7 +496,7 @@ def generate_log_normal_dist_value(frequency, mu, sigma, draws, seed_value):
     Returns
     -------
     random_variation : float
-        Mean of the random variation over the specified itations. 
+        Mean of the random variation over the specified itations.
 
     """
     if seed_value == None:
