@@ -1,5 +1,5 @@
 import pytest
-from pysim5g.path_loss_module import (
+from pysim5g.path_loss import (
     path_loss_calculator,
     determine_path_loss,
     free_space,
