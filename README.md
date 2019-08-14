@@ -10,12 +10,7 @@ Description
 
 Statistical modelling can be performed under different radio interference scenarios for assessing system-level performance of 4G and 5G co-existence in the sub-6GHz spectrum bands.
 
-The simulator focuses on quantifying the benefits of (i) ultra-dense networks, (ii) 5G spectral efficiency gains and (iii) the use of both 4G and 5G sub-6GHz spectrum bands. 
-
-## Citation:
-```
-tbc
-```
+The simulator focuses on quantifying the benefits of (i) ultra-dense networks, (ii) 5G spectral efficiency gains and (iii) the use of both 4G and 5G sub-6GHz spectrum bands.
 
 Setup and configuration
 =======================
