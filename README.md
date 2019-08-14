@@ -8,9 +8,11 @@ Description
 ===========
 **pysim5g** is an open-source software tool, based on the Monte-Carlo method, for integrated engineering-economic modelling of 5G.
 
-Statistical analysis can be performed under different radio interference scenarios for assessing system-level performance of 4G and 5G co-existence in the sub-6GHz spectrum bands. This allows users to simulate the deployment of new networks delivering different levels of Quality of Service (QoS) in diffferent propagation environments.
+Statistical analysis can be performed under different radio interference scenarios for assessing system-level performance of 4G/5G co-existence in the sub-6GHz spectrum bands. 
 
-**pysim5g** focuses on providing quantified economic evidence on the benefits of (i) ultra-dense networks, (ii) 5G spectral efficiency gains and (iii) the use of both existing 4G and new 5G sub-6GHz spectrum bands.
+Users can simulate the deployment of new networks delivering different levels of Quality of Service (QoS) for diffferent propagation environments.
+
+Quantified cost analytics provide insight into the economics of (i) ultra-dense networks, (ii) 5G spectral efficiency gains and (iii) the capacity and coverage of 4G/5G co-existence for sub-6GHz spectrum bands.
 
 Setup and configuration
 =======================
