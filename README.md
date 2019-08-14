@@ -2,6 +2,7 @@ python simulator for modelling 5G (pysim5g)
 ===========================================
 
 [![Build Status](https://travis-ci.com/edwardoughton/pysim5g.svg?branch=master)](https://travis-ci.com/edwardoughton/pysim5g)
+[![Coverage Status](https://coveralls.io/repos/github/edwardoughton/pysim5g/badge.svg?branch=master)](https://coveralls.io/github/edwardoughton/pysim5g?branch=master)
 
 Description
 ===========
