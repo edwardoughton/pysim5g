@@ -1,5 +1,5 @@
 """
-Path Loss Calculator
+Path loss calculator
 
 Author: Edward Oughton
 Date: April 2019
