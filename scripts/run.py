@@ -599,7 +599,7 @@ def write_lookup_table(results, environment, cell_radius,
     lut_file.close()
 
 
-def write_shapefile(data, filename):
+def write_shapefile(data, filename, crs):
     """
 
     Write geojson data to shapefile.
@@ -617,7 +617,7 @@ def write_shapefile(data, filename):
         prop_schema.append((name, fiona_prop_type))
 
     sink_driver = 'ESRI Shapefile'
-    sink_crs = {'init': 'epsg:27700'}
+    sink_crs = {'init': crs}
     sink_schema = {
         'geometry': data[0]['geometry']['type'],
         'properties': OrderedDict(prop_schema)
@@ -654,6 +654,9 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
             }
         }
 
+    unprojected_crs = 'epsg:4326'
+    projected_crs = 'epsg:3857'
+
     environments =[
         'urban',
         'suburban',
@@ -668,7 +671,9 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
             transmitter, interfering_transmitters, cell_area, interfering_cell_areas = \
                 produce_sites_and_cell_areas(
                     unprojected_point['geometry']['coordinates'],
-                    cell_radius
+                    cell_radius,
+                    unprojected_crs,
+                    projected_crs
                     )
 
             receivers = generate_receivers(cell_area, SIMULATION_PARAMETERS, 0)
@@ -724,32 +729,36 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
 
                     write_shapefile(
                         geojson_receivers,
-                        'receivers_{}.shp'.format(cell_radius)
+                        'receivers_{}.shp'.format(cell_radius),
+                        projected_crs
                         )
 
                     write_shapefile(
                         transmitter,
-                        'transmitter_{}.shp'.format(cell_radius)
+                        'transmitter_{}.shp'.format(cell_radius),
+                        projected_crs
                     )
 
                     write_shapefile(
                         cell_area,
-                        'cell_area_{}.shp'.format(cell_radius)
+                        'cell_area_{}.shp'.format(cell_radius),
+                        projected_crs
                     )
 
                     write_shapefile(
                         interfering_transmitters,
-                        'interfering_transmitters_{}.shp'.format(cell_radius)
+                        'interfering_transmitters_{}.shp'.format(cell_radius),
+                        projected_crs
                     )
 
                     write_shapefile(
                         interfering_cell_areas,
-                        'interfering_cell_areas_{}.shp'.format(cell_radius)
+                        'interfering_cell_areas_{}.shp'.format(cell_radius),
+                        projected_crs
                     )
 
 
 if __name__ == '__main__':
-
 
     SIMULATION_PARAMETERS = {
         'iterations': 50,
