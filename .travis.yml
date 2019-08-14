@@ -13,6 +13,6 @@ install:
   - pip install coveralls
 # command to run tests
 script:
-  - pytest
+  - pytest --cov pysim5g --cov-report term-missing
 after_success:
-- if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
+  - coveralls
