@@ -56,7 +56,7 @@ src/smif/sample_project/results/*
 # data file
 data/*
 vis/figures*
-
+results/*
 # Other files
 *.ipynb
 src/smif/app/.nyc_output

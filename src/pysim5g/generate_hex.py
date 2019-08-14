@@ -75,7 +75,7 @@ def calculate_polygons(startx, starty, endx, endy, radius):
     endy : float
         Ending coordinate y.
     radius : int
-        Given radius of cell areas.
+        Given radius of site areas.
 
     Returns
     -------
@@ -157,13 +157,13 @@ def calculate_polygons(startx, starty, endx, endy, radius):
     return polygons
 
 
-def find_closest_cell_areas(hexagons, geom_shape):
+def find_closest_site_areas(hexagons, geom_shape):
     """
 
-    Get the transmitter and interfering cell areas, by finding the closest
+    Get the transmitter and interfering site areas, by finding the closest
     hex shapes. The first closest hex shape to the transmitter will be the
-    transmitter's cell area. The next closest hex areas will be the
-    intefering cell areas.
+    transmitter's site area. The next closest hex areas will be the
+    intefering site areas.
 
     Parameters
     ----------
@@ -174,10 +174,10 @@ def find_closest_cell_areas(hexagons, geom_shape):
 
     Returns
     -------
-    cell_area : List of dicts
-        Contains the geojson cell area for the transmitter.
-    interfering_cell_areas : List of dicts
-        Contains the geojson interfering cell areas.
+    site_area : List of dicts
+        Contains the geojson site area for the transmitter.
+    interfering_site_areas : List of dicts
+        Contains the geojson interfering site areas.
 
     """
     idx = index.Index()
@@ -188,7 +188,7 @@ def find_closest_cell_areas(hexagons, geom_shape):
 
     transmitter = mapping(geom_shape.centroid)
 
-    cell_area =  list(
+    site_area =  list(
         idx.nearest(
             (transmitter['coordinates'][0],
             transmitter['coordinates'][1],
@@ -197,99 +197,99 @@ def find_closest_cell_areas(hexagons, geom_shape):
             1, objects='raw')
             )[0]
 
-    closest_cell_area_centroid = Polygon(
-        cell_area['geometry']['coordinates'][0]
+    closest_site_area_centroid = Polygon(
+        site_area['geometry']['coordinates'][0]
         ).centroid
 
     all_closest_sites =  list(
         idx.nearest(
-            closest_cell_area_centroid.bounds,
+            closest_site_area_centroid.bounds,
             7, objects='raw')
             )
 
-    interfering_cell_areas = all_closest_sites[1:7]
+    interfering_site_areas = all_closest_sites[1:7]
 
-    cell_area = []
-    cell_area.append(all_closest_sites[0])
+    site_area = []
+    site_area.append(all_closest_sites[0])
 
-    return cell_area, interfering_cell_areas
+    return site_area, interfering_site_areas
 
 
-def find_site_locations(cell_area, interfering_cell_areas):
+def find_site_locations(site_area, interfering_site_areas):
     """
 
-    Get the centroid for each cell area and intefering cell areas.
+    Get the centroid for each site area and intefering site areas.
 
     Parameters
     ----------
-    cell_area : List of dicts
-        Contains the geojson cell area for the transmitter.
-    interfering_cell_areas : List of dicts
-        Contains the geojson interfering cell areas.
+    site_area : List of dicts
+        Contains the geojson site area for the transmitter.
+    interfering_site_areas : List of dicts
+        Contains the geojson interfering site areas.
 
     Returns
     -------
     transmitter : List of dicts
         Contains the geojson site location for the transmitter.
-    interfering_cell_areas : List of dicts
-        Contains the geojson site locations for interfering cells.
+    interfering_site_areas : List of dicts
+        Contains the geojson site locations for interfering sites.
 
     """
-    cell_area_site = Polygon(
-        cell_area[0]['geometry']['coordinates'][0]
+    site_area_site = Polygon(
+        site_area[0]['geometry']['coordinates'][0]
         ).centroid
 
     transmitter = []
     transmitter.append({
         'type': 'Feature',
-        'geometry': mapping(cell_area_site),
+        'geometry': mapping(site_area_site),
         'properties': {
             'site_id': 'transmitter'
         }
     })
 
     interfering_transmitters = []
-    for interfering_cell in interfering_cell_areas:
+    for interfering_site in interfering_site_areas:
         interfering_transmitters.append({
             'type': 'Feature',
-            'geometry': mapping(interfering_cell['centroid']),
+            'geometry': mapping(interfering_site['centroid']),
             'properties': {
-                'site_id': interfering_cell['properties']['site_id']
+                'site_id': interfering_site['properties']['site_id']
             }
         })
 
     return transmitter, interfering_transmitters
 
 
-def generate_cell_areas(point, cell_radius):
+def generate_site_areas(point, site_radius):
     """
 
-    Generate a cell area, as well as the interfering cell areas, for
-    a specific cell_radius.
+    Generate a site area, as well as the interfering site areas, for
+    a specific site_radius.
 
     Parameters
     ----------
     point : dict
         Geojson point in desired Coordinate Reference System.
-    cell_radius : int
-        Distance between transmitter and cell edge in meters.
+    site_radius : int
+        Distance between transmitter and site edge in meters.
 
     Returns
     -------
-    cell_area : List of dicts
-        Contains the geojson cell area for the transmitter.
-    interfering_cell_areas : List of dicts
-        Contains the geojson interfering cell areas.
+    site_area : List of dicts
+        Contains the geojson site area for the transmitter.
+    interfering_site_areas : List of dicts
+        Contains the geojson interfering site areas.
 
     """
     geom_shape = shape(point['geometry'])
 
-    buffered = Polygon(geom_shape.buffer(cell_radius*2).exterior)
+    buffered = Polygon(geom_shape.buffer(site_radius*2).exterior)
 
     polygon = calculate_polygons(
         buffered.bounds[0], buffered.bounds[1],
         buffered.bounds[2], buffered.bounds[3],
-        cell_radius)
+        site_radius)
 
     hexagons = []
     id_num = 0
@@ -308,25 +308,25 @@ def generate_cell_areas(point, cell_radius):
 
         id_num += 1
 
-    cell_area, interfering_cell_areas = find_closest_cell_areas(
+    site_area, interfering_site_areas = find_closest_site_areas(
         hexagons, geom_shape
     )
 
-    return cell_area, interfering_cell_areas
+    return site_area, interfering_site_areas
 
 
-def produce_sites_and_cell_areas(unprojected_point, cell_radius, unprojected_crs,
+def produce_sites_and_site_areas(unprojected_point, site_radius, unprojected_crs,
     projected_crs):
     """
 
-    Meta function to produce a set of hex shapes with a specific cell_radius.
+    Meta function to produce a set of hex shapes with a specific site_radius.
 
     Parameters
     ----------
     unprojected_point : Tuple
         x and y coordinates for an unprojected point.
-    cell_radius : int
-        Distance between transmitter and cell edge in meters.
+    site_radius : int
+        Distance between transmitter and site edge in meters.
 
     Returns
     -------
@@ -334,10 +334,10 @@ def produce_sites_and_cell_areas(unprojected_point, cell_radius, unprojected_crs
         Contains a geojson dict for the transmitter site.
     interfering_transmitters : List of dicts
         Contains multiple geojson dicts for the interfering transmitter sites.
-    cell_area : List of dicts
-        Contains a geojson dict for the transmitter cell area.
-    interfering_cell_areas : List of dicts
-        Contains multiple geojson dicts for the interfering transmitter cell
+    site_area : List of dicts
+        Contains a geojson dict for the transmitter site area.
+    interfering_site_areas : List of dicts
+        Contains multiple geojson dicts for the interfering transmitter site
         areas.
 
     """
@@ -345,10 +345,10 @@ def produce_sites_and_cell_areas(unprojected_point, cell_radius, unprojected_crs
         projected_crs
     )
 
-    cell_area, interfering_cell_areas = generate_cell_areas(point, cell_radius)
+    site_area, interfering_site_areas = generate_site_areas(point, site_radius)
 
-    transmitter, interfering_transmitters = find_site_locations(cell_area,
-        interfering_cell_areas
+    transmitter, interfering_transmitters = find_site_locations(site_area,
+        interfering_site_areas
     )
 
-    return transmitter, interfering_transmitters, cell_area, interfering_cell_areas
+    return transmitter, interfering_transmitters, site_area, interfering_site_areas
