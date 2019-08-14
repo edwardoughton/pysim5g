@@ -3,10 +3,8 @@ language: python
 python:
   - "3.7"
 # command to install dependencies
-
 before_install:
   - sudo apt-get install -y libspatialindex-dev libgeos-dev gdal-bin
-
 
 install:
   - python setup.py install
@@ -16,11 +14,5 @@ install:
 # command to run tests
 script:
   - pytest
-script:
-  - pytest --cov=pysim5g/
 after_success:
-  - coveralls
-
-
-# after_success:
-# - if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
+- if [[ "$COVERAGE" == "true" ]]; then coveralls || echo "failed"; fi
