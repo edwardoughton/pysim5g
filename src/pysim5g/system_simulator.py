@@ -560,38 +560,6 @@ class SimulationManager(object):
 
         return capacity_mbps, capacity_mbps_km2
 
-
-    def site_density(self):
-        """
-
-        Calculate site density per square kilometer (km^2)
-
-        Returns
-        -------
-        site_density : float
-            Density of sites per square kilometer (km^2)
-
-        Notes
-        -----
-        Function returns `0` when no sites are configered to the area.
-
-        """
-        if not self.sites:
-            return 0
-
-        sites_in_area = self.find_sites_in_area()
-
-        postcode_sector_area = (
-            [round(a.area) for a in self.area.values()]
-            )[0]
-
-        site_density = (
-            len(sites_in_area) / (postcode_sector_area/1000000)
-            )
-
-        return site_density
-
-
     def receiver_density(self):
         """
 

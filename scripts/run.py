@@ -803,9 +803,11 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
                         results, simulation_parameters
                         )
 
+                    results_directory = os.path.join(BASE_PATH, '..', 'results')
+
                     write_frequency_lookup_table(average_site_results, environment,
                         site_radius, frequency, bandwidth, generation,
-                        mast_height, os.path.join(BASE_PATH, '..', 'results'),
+                        mast_height, results_directory,
                         'average_capacity_lut.csv',
                         simulation_parameters
                     )
@@ -815,7 +817,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
                         percentile_site_results = obtain_percentile_values(
                             results, simulation_parameters
                         )
-                        print(percentile_site_results)
+
                         percentile_site_results = calculate_costs(
                             percentile_site_results, costs, simulation_parameters,
                             site_radius, environment
@@ -823,7 +825,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
 
                         write_cost_lookup_table(percentile_site_results, environment,
                             site_radius, frequency, bandwidth, generation,
-                            mast_height, os.path.join(BASE_PATH, '..', 'results'),
+                            mast_height, results_directory,
                             'percentile_{}_capacity_lut.csv'.format(
                                 simulation_parameters['percentile']),
                             simulation_parameters
@@ -833,31 +835,31 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
                     geojson_receivers = convert_results_geojson(results)
 
                     write_shapefile(
-                        geojson_receivers, BASE_PATH,
+                        geojson_receivers, os.path.join(results_directory, 'shapes'),
                         'receivers_{}.shp'.format(site_radius),
                         projected_crs
                         )
 
                     write_shapefile(
-                        transmitter, BASE_PATH,
+                        transmitter, os.path.join(results_directory, 'shapes'),
                         'transmitter_{}.shp'.format(site_radius),
                         projected_crs
                     )
 
                     write_shapefile(
-                        site_area, BASE_PATH,
+                        site_area, os.path.join(results_directory, 'shapes'),
                         'site_area_{}.shp'.format(site_radius),
                         projected_crs
                     )
 
                     write_shapefile(
-                        interfering_transmitters, BASE_PATH,
+                        interfering_transmitters, os.path.join(results_directory, 'shapes'),
                         'interfering_transmitters_{}.shp'.format(site_radius),
                         projected_crs
                     )
 
                     write_shapefile(
-                        interfering_site_areas, BASE_PATH,
+                        interfering_site_areas, os.path.join(results_directory, 'shapes'),
                         'interfering_site_areas_{}.shp'.format(site_radius),
                         projected_crs
                     )
