@@ -4,10 +4,10 @@ import numpy as np
 from shapely.geometry import shape, Point
 
 
-def test_simulation_manager(base_system, setup_transmitter, setup_cell_area):
+def test_simulation_manager(base_system, setup_transmitter, setup_site_area):
 
     assert base_system.transmitter.id == setup_transmitter[0]['properties']['site_id']
-    assert base_system.cell_area.id == setup_cell_area[0]['properties']['site_id']
+    assert base_system.site_area.id == setup_site_area[0]['properties']['site_id']
     assert len(base_system.receivers) == 3
     assert len(base_system.interfering_transmitters) == 6
 

@@ -134,15 +134,15 @@ def test_extended_hata_model_value_errors():
         extended_hata(7,200,20,'macro',20,20,'urban','los',1.5,1,42,1)
 
     with pytest.raises(
-        ValueError, match='Could not determine if cell is above or below roof line'):
+        ValueError, match='Could not determine if transmitter is above or below roof line'):
         extended_hata(1,50,15,'macro',20,20,'urban','los',1.5,'unknown',42,1)
 
     with pytest.raises(
-        ValueError, match='Could not determine if cell is above or below roof line'):
+        ValueError, match='Could not determine if transmitter is above or below roof line'):
         extended_hata(1,150,15,'macro',20,20,'urban','los',1.5,'unknown',42,1)
 
     with pytest.raises(
-        ValueError, match='Could not determine if cell is above or below roof line'):
+        ValueError, match='Could not determine if transmitter is above or below roof line'):
         extended_hata(1,400,15,'macro',20,20,'urban','los',1.5,'unknown',42,1)
 
 
