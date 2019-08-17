@@ -29,17 +29,17 @@ class SimulationManager(object):
         Contains dicts for each interfering transmitter site.
     receivers : list of dicts
         Contains a dict for each User Equipment (UE) receiver.
-    site_area : list of dicts
+    cell_area : list of dicts
         Contains geojson dict for the cell area polygon.
     simulation_parameters : dict
         A dict containing all simulation parameters necessary.
 
     """
     def __init__(self, transmitter, interfering_transmitters,
-        receivers, site_area, simulation_parameters):
+        receivers, cell_area, simulation_parameters):
 
         self.transmitter = Transmitter(transmitter[0], simulation_parameters)
-        self.site_area = SiteArea(site_area[0])
+        self.cell_area = CellArea(cell_area[0])
         self.receivers = {}
         self.interfering_transmitters = {}
 
@@ -555,7 +555,7 @@ class SimulationManager(object):
         )
 
         capacity_mbps_km2 = (
-            capacity_mbps / (self.site_area.area / 1e6)
+            capacity_mbps / (self.cell_area.area / 1e6)
         )
 
         return capacity_mbps, capacity_mbps_km2
@@ -617,7 +617,7 @@ class Transmitter(object):
         return "<Transmitter id:{}>".format(self.id)
 
 
-class SiteArea(object):
+class CellArea(object):
     """
 
     Cell area object.
