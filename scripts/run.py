@@ -411,7 +411,7 @@ def convert_results_geojson(data):
 
 
 def write_full_results(data, environment, site_radius, frequency,
-    bandwidth, generation, mast_height, directory, filename,
+    bandwidth, generation, ant_height, directory, filename,
     simulation_parameters):
     """
 
@@ -431,7 +431,7 @@ def write_full_results(data, environment, site_radius, frequency,
         Channel bandwidth of carrier band in MHz.
     generation : string
         Either 4G or 5G depending on technology generation.
-    mast_height : int
+    ant_height : int
         Height of the transmitters modelled in meters.
     directory : string
         Folder the data will be written to.
@@ -464,7 +464,7 @@ def write_full_results(data, environment, site_radius, frequency,
             'bandwidth_MHz',
             'number_of_sectors',
             'generation',
-            'mast_height_m',
+            'ant_height_m',
             'receiver_x',
             'receiver_y',
             'path_loss_dB',
@@ -489,7 +489,7 @@ def write_full_results(data, environment, site_radius, frequency,
             bandwidth,
             sectors,
             generation,
-            mast_height,
+            ant_height,
             row['receiver_x'],
             row['receiver_y'],
             row['path_loss'],
@@ -506,7 +506,7 @@ def write_full_results(data, environment, site_radius, frequency,
 
 
 def write_frequency_lookup_table(results, environment, site_radius,
-    frequency, bandwidth, generation, mast_height,
+    frequency, bandwidth, generation, ant_height,
     directory, filename, simulation_parameters):
     """
 
@@ -527,7 +527,7 @@ def write_frequency_lookup_table(results, environment, site_radius,
         Channel bandwidth of carrier band in MHz.
     generation : string
         Either 4G or 5G depending on technology generation.
-    mast_height : int
+    ant_height : int
         Height of the transmitters modelled in meters.
     directory : string
         Folder the data will be written to.
@@ -562,7 +562,7 @@ def write_frequency_lookup_table(results, environment, site_radius,
                 'bandwidth_MHz',
                 'number_of_sectors',
                 'generation',
-                'mast_height_m',
+                'ant_height_m',
                 'path_loss_dB',
                 'received_power_dBm',
                 'interference_dBm',
@@ -587,7 +587,7 @@ def write_frequency_lookup_table(results, environment, site_radius,
             bandwidth,
             sectors,
             generation,
-            mast_height,
+            ant_height,
             results['path_loss'],
             results['received_power'],
             results['interference'],
@@ -603,7 +603,7 @@ def write_frequency_lookup_table(results, environment, site_radius,
 
 
 def write_cost_lookup_table(results, environment, site_radius,
-    frequency, bandwidth, generation, mast_height,
+    frequency, bandwidth, generation, ant_height,
     directory, filename, simulation_parameters):
     """
 
@@ -624,7 +624,7 @@ def write_cost_lookup_table(results, environment, site_radius,
         Channel bandwidth of carrier band in MHz.
     generation : string
         Either 4G or 5G depending on technology generation.
-    mast_height : int
+    ant_height : int
         Height of the transmitters modelled in meters.
     directory : string
         Folder the data will be written to.
@@ -734,7 +734,7 @@ def write_shapefile(data, directory, filename, crs):
 
 
 def run_simulator(simulation_parameters, spectrum_portfolio,
-    mast_heights, site_radii, modulation_and_coding_lut, costs):
+    ant_heights, site_radii, modulation_and_coding_lut, costs):
     """
 
     Function to run the simulator and all associated modules.
@@ -777,7 +777,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
             receivers = generate_receivers(site_area, SIMULATION_PARAMETERS, 0)
 
             for frequency, bandwidth, generation in spectrum_portfolio:
-                for mast_height in mast_heights:
+                for ant_height in ant_heights:
 
                     MANAGER = SimulationManager(
                         transmitter, interfering_transmitters, receivers,
@@ -785,7 +785,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
                         )
 
                     results = MANAGER.estimate_link_budget(
-                        frequency, bandwidth, generation, mast_height,
+                        frequency, bandwidth, generation, ant_height,
                         environment,
                         MODULATION_AND_CODING_LUT,
                         SIMULATION_PARAMETERS
@@ -793,10 +793,10 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
 
                     folder = os.path.join(BASE_PATH, '..', 'results', 'full_tables')
                     filename = 'full_capacity_lut_{}_{}_{}_{}.csv'.format(
-                        environment, site_radius, frequency, mast_height)
+                        environment, site_radius, frequency, ant_height)
 
                     write_full_results(results, environment, site_radius,
-                        frequency, bandwidth, generation, mast_height,
+                        frequency, bandwidth, generation, ant_height,
                         folder, filename, simulation_parameters)
 
                     average_site_results = obtain_average_values(
@@ -807,7 +807,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
 
                     write_frequency_lookup_table(average_site_results, environment,
                         site_radius, frequency, bandwidth, generation,
-                        mast_height, results_directory,
+                        ant_height, results_directory,
                         'average_capacity_lut.csv',
                         simulation_parameters
                     )
@@ -825,7 +825,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
 
                         write_cost_lookup_table(percentile_site_results, environment,
                             site_radius, frequency, bandwidth, generation,
-                            mast_height, results_directory,
+                            ant_height, results_directory,
                             'percentile_{}_capacity_lut.csv'.format(
                                 simulation_parameters['percentile']),
                             simulation_parameters
@@ -871,6 +871,7 @@ if __name__ == '__main__':
         'iterations': 100,
         'seed_value1': 1,
         'seed_value2': 2,
+        'los_breakpoint_m': 250,
         'tx_baseline_height': 30,
         'tx_upper_height': 40,
         'tx_power': 40,
@@ -913,7 +914,7 @@ if __name__ == '__main__':
         (3.5, 40, '5G'),
     ]
 
-    MAST_HEIGHT = [
+    ant_height = [
         (30),
         (40)
     ]
@@ -969,7 +970,7 @@ if __name__ == '__main__':
     run_simulator(
         SIMULATION_PARAMETERS,
         SPECTRUM_PORTFOLIO,
-        MAST_HEIGHT,
+        ant_height,
         site_RADII,
         MODULATION_AND_CODING_LUT,
         COSTS

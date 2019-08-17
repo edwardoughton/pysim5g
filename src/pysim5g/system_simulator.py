@@ -39,14 +39,9 @@ class SimulationManager(object):
         receivers, site_area, simulation_parameters):
 
         self.transmitter = Transmitter(transmitter[0], simulation_parameters)
-        self.site_area = siteArea(site_area[0])
-        self.receivers = {}
         self.interfering_transmitters = {}
-
-        for receiver in receivers:
-            receiver_id = receiver['properties']["ue_id"]
-            receiver = Receiver(receiver, simulation_parameters)
-            self.receivers[receiver_id] = receiver
+        self.receivers = {}
+        self.site_area = SiteArea(site_area[0])
 
         for interfering_transmitter in interfering_transmitters:
             site_id = interfering_transmitter['properties']["site_id"]
@@ -54,6 +49,11 @@ class SimulationManager(object):
                 interfering_transmitter, simulation_parameters
                 )
             self.interfering_transmitters[site_id] = site_object
+
+        for receiver in receivers:
+            receiver_id = receiver['properties']["ue_id"]
+            receiver = Receiver(receiver, simulation_parameters)
+            self.receivers[receiver_id] = receiver
 
 
     def estimate_link_budget(self, frequency, bandwidth,
@@ -92,35 +92,36 @@ class SimulationManager(object):
         seed_value1 = simulation_parameters['seed_value1']
         seed_value2 = simulation_parameters['seed_value2']
         iterations = simulation_parameters['iterations']
+        los_breakpoint_m = simulation_parameters['los_breakpoint_m']
 
         for receiver in self.receivers.values():
 
-            path_loss, r_model, r_distance, type_of_sight = self.calculate_path_loss(
-                receiver, frequency, environment, seed_value1, iterations
+            path_loss, r_model, r_distance, type_of_sight = self.estimate_path_loss(
+                receiver, frequency, environment, seed_value1, iterations, los_breakpoint_m
             )
 
-            received_power = self.calc_received_power(self.transmitter,
+            received_power = self.estimate_received_power(self.transmitter,
                 receiver, path_loss
             )
 
-            interference, i_model, ave_distance, ave_inf_pl = self.calculate_interference(
-                receiver, frequency, environment, seed_value2, iterations)
+            interference, i_model, ave_distance, ave_inf_pl = self.estimate_interference(
+                receiver, frequency, environment, seed_value2, iterations, los_breakpoint_m)
 
-            noise = self.calculate_noise(
+            noise = self.estimate_noise(
                 bandwidth
             )
 
             f_received_power, f_interference, f_noise, i_plus_n, sinr = \
-                self.calculate_sinr(received_power, interference, noise,
+                self.estimate_sinr(received_power, interference, noise,
                 simulation_parameters
                 )
 
-            spectral_efficiency = self.modulation_scheme_and_coding_rate(
+            spectral_efficiency = self.estimate_spectral_efficiency(
                 sinr, generation, modulation_and_coding_lut
             )
 
             capacity_mbps, capacity_mbps_km2 = (
-                self.average_capacity(
+                self.estimate_average_capacity(
                 bandwidth, spectral_efficiency)
             )
 
@@ -149,8 +150,8 @@ class SimulationManager(object):
         return results
 
 
-    def calculate_path_loss(self, receiver, frequency,
-        environment, seed_value, iterations):
+    def estimate_path_loss(self, receiver, frequency,
+        environment, seed_value, iterations, los_breakpoint_m):
         """
 
         Function to calculate the path loss between a transmitter
@@ -168,6 +169,8 @@ class SimulationManager(object):
             Set seed value for quasi-random number generator.
         iterations : int
             The number of stochastic iterations for the specific point.
+        los_breakpoint_m : int
+            The breakpoint over which propagation becomes non line of sight.
 
         Returns
         -------
@@ -195,11 +198,11 @@ class SimulationManager(object):
         strt_distance = temp_line.length
 
         ant_height = self.transmitter.ant_height
-        ant_type =  'macro'
+        ant_type =  self.transmitter.ant_type
 
-        los_distance = 250
+        los_breakpoint_m = 250
 
-        if strt_distance < los_distance :
+        if strt_distance < los_breakpoint_m :
             type_of_sight = 'los'
         else:
             type_of_sight = 'nlos'
@@ -228,7 +231,7 @@ class SimulationManager(object):
         return path_loss, model, strt_distance, type_of_sight
 
 
-    def calc_received_power(self, transmitter, receiver, path_loss):
+    def estimate_received_power(self, transmitter, receiver, path_loss):
         """
 
         Calculate received power based on transmitter and receiver
@@ -271,8 +274,8 @@ class SimulationManager(object):
         return received_power
 
 
-    def calculate_interference(
-        self, receiver, frequency, environment, seed_value, iterations):
+    def estimate_interference(self, receiver, frequency, environment,
+        seed_value, iterations, los_breakpoint_m):
         """
         Calculate interference from other sites.
 
@@ -327,11 +330,9 @@ class SimulationManager(object):
             interference_strt_distance = temp_line.length
 
             ant_height = interfering_transmitter.ant_height
-            ant_type =  'macro'
+            ant_type =  interfering_transmitter.ant_type
 
-            los_distance = 250
-
-            if interference_strt_distance < los_distance :
+            if interference_strt_distance < los_breakpoint_m:
                 type_of_sight = 'los'
             else:
                 type_of_sight = 'nlos'
@@ -358,7 +359,7 @@ class SimulationManager(object):
                 iterations
             )
 
-            received_interference = self.calc_received_power(
+            received_interference = self.estimate_received_power(
                 interfering_transmitter,
                 receiver,
                 path_loss
@@ -380,7 +381,7 @@ class SimulationManager(object):
         return interference, model, ave_distance, ave_pl
 
 
-    def calculate_noise(self, bandwidth):
+    def estimate_noise(self, bandwidth):
         """
 
         Estimates the potential noise at the UE receiver.
@@ -425,7 +426,7 @@ class SimulationManager(object):
         return noise
 
 
-    def calculate_sinr(self, received_power, interference, noise,
+    def estimate_sinr(self, received_power, interference, noise,
         simulation_parameters):
         """
 
@@ -481,7 +482,7 @@ class SimulationManager(object):
         return received_power, raw_sum_of_interference, noise, i_plus_n, sinr
 
 
-    def modulation_scheme_and_coding_rate(self, sinr, generation,
+    def estimate_spectral_efficiency(self, sinr, generation,
         modulation_and_coding_lut):
         """
         Uses the SINR to determine spectral efficiency given the relevant
@@ -529,7 +530,7 @@ class SimulationManager(object):
                     return spectral_efficiency
 
 
-    def average_capacity(self, bandwidth, spectral_efficiency):
+    def estimate_average_capacity(self, bandwidth, spectral_efficiency):
         """
         Estimate link capacity based on bandwidth and received signal.
 
@@ -559,6 +560,7 @@ class SimulationManager(object):
         )
 
         return capacity_mbps, capacity_mbps_km2
+
 
     def receiver_density(self):
         """
@@ -613,35 +615,30 @@ class Transmitter(object):
         self.gain = simulation_parameters['tx_gain']
         self.losses = simulation_parameters['tx_losses']
 
-    def __repr__(self):
-        return "<Transmitter id:{}>".format(self.id)
 
-
-class siteArea(object):
+class InterferingTransmitter(object):
     """
 
-    site area object.
+    A site object is specific site.
 
     Parameters
     ----------
     data : dict
         Contains all object data parameters.
+    simulation_parameters : dict
+        A dict containing all simulation parameters necessary.
 
     """
-    def __init__(self, data):
+    def __init__(self, data, simulation_parameters):
+
         self.id = data['properties']['site_id']
-        self.geometry = data['geometry']
         self.coordinates = data['geometry']['coordinates']
-        self.area = self._calculate_area(data)
 
-    def _calculate_area(self, data):
-        polygon = shape(data['geometry'])
-        area = polygon.area
-        return area
-
-
-    def __repr__(self):
-        return "<Transmitter id:{}>".format(self.id)
+        self.ant_type = 'macro'
+        self.ant_height = simulation_parameters['tx_baseline_height']
+        self.power = simulation_parameters['tx_power']
+        self.gain = simulation_parameters['tx_gain']
+        self.losses = simulation_parameters['tx_losses']
 
 
 class Receiver(object):
@@ -661,42 +658,40 @@ class Receiver(object):
         self.id = data['properties']['ue_id']
         self.coordinates = data['geometry']["coordinates"]
 
-        self.misc_losses = data['properties']['misc_losses']
+        self.ue_height = data['properties']['ue_height']
         self.gain = data['properties']['gain']
         self.losses = data['properties']['losses']
-        self.ue_height = data['properties']['ue_height']
+        self.misc_losses = data['properties']['misc_losses']
         self.indoor = data['properties']['indoor']
 
-    def __repr__(self):
-        return "<Receiver id:{}>".format(self.id)
 
-
-class InterferingTransmitter(object):
+class SiteArea(object):
     """
-    A site object is specific site.
+
+    site area object.
 
     Parameters
     ----------
     data : dict
         Contains all object data parameters.
-    simulation_parameters : dict
-        A dict containing all simulation parameters necessary.
 
     """
-    def __init__(self, data, simulation_parameters):
-
+    def __init__(self, data):
         self.id = data['properties']['site_id']
-        self.coordinates = data['geometry']['coordinates']
         self.geometry = data['geometry']
+        self.coordinates = data['geometry']['coordinates']
+        self.area = self._calculate_area(data)
 
-        self.ant_height = simulation_parameters['tx_baseline_height']
-        self.power = simulation_parameters['tx_power']
-        self.gain = simulation_parameters['tx_gain']
-        self.losses = simulation_parameters['tx_losses']
+
+    def _calculate_area(self, data):
+        polygon = shape(data['geometry'])
+        area = polygon.area
+        return area
 
 
 def pairwise(iterable):
     """
+
     Return iterable of 2-tuples in a sliding window
 
     Parameters
@@ -713,6 +708,7 @@ def pairwise(iterable):
     -------
         >>> list(pairwise([1,2,3,4]))
             [(1,2),(2,3),(3,4)]
+
     """
     a, b = tee(iterable)
     next(b, None)
