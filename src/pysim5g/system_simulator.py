@@ -30,7 +30,7 @@ class SimulationManager(object):
     receivers : list of dicts
         Contains a dict for each User Equipment (UE) receiver.
     site_area : list of dicts
-        Contains geojson dict for the cell area polygon.
+        Contains geojson dict for the site area polygon.
     simulation_parameters : dict
         A dict containing all simulation parameters necessary.
 
@@ -39,7 +39,7 @@ class SimulationManager(object):
         receivers, site_area, simulation_parameters):
 
         self.transmitter = Transmitter(transmitter[0], simulation_parameters)
-        self.site_area = SiteArea(site_area[0])
+        self.site_area = siteArea(site_area[0])
         self.receivers = {}
         self.interfering_transmitters = {}
 
@@ -274,11 +274,11 @@ class SimulationManager(object):
     def calculate_interference(
         self, receiver, frequency, environment, seed_value, iterations):
         """
-        Calculate interference from other cells.
+        Calculate interference from other sites.
 
         closest_sites contains all sites, ranked based
-        on distance, meaning we need to select cells 1-3 (as cell 0
-        is the actual cell in use)
+        on distance, meaning we need to select sites 1-3 (as site 0
+        is the actual site in use)
 
         Parameters
         ----------
@@ -545,7 +545,7 @@ class SimulationManager(object):
         capacity_mbps : float
             Average link budget capacity in Mbps.
         capacity_mbps_km2 : float
-            Average cell area capacity in Mbps km^2.
+            Average site area capacity in Mbps km^2.
 
         """
         bandwidth_in_hertz = bandwidth * 1e6 #MHz to Hz
@@ -617,10 +617,10 @@ class Transmitter(object):
         return "<Transmitter id:{}>".format(self.id)
 
 
-class SiteArea(object):
+class siteArea(object):
     """
 
-    Cell area object.
+    site area object.
 
     Parameters
     ----------

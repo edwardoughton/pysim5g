@@ -95,7 +95,7 @@ def setup_interfering_transmitters():
 
 
 @fixture(scope='function')
-def setup_cell_area():
+def setup_site_area():
     return [
         {
             'type': 'Feature',
@@ -121,7 +121,7 @@ def setup_cell_area():
 
 
 @fixture(scope='function')
-def setup_interfering_cell_areas():
+def setup_interfering_site_areas():
     return [
         {
             'type': 'Feature',
@@ -326,10 +326,10 @@ def setup_simulation_parameters():
 
 @pytest.fixture
 def base_system(setup_transmitter, setup_interfering_transmitters,
-        setup_receivers, setup_cell_area, setup_simulation_parameters):
+        setup_receivers, setup_site_area, setup_simulation_parameters):
 
     system = SimulationManager(setup_transmitter, setup_interfering_transmitters,
-        setup_receivers, setup_cell_area, setup_simulation_parameters)
+        setup_receivers, setup_site_area, setup_simulation_parameters)
 
     return system
 
