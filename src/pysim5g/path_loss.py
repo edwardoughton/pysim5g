@@ -32,7 +32,7 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type,
     ant_height:
         Height of the antenna.
     ant_type : string
-        Indicates the type of cell (hotspot, micro, macro).
+        Indicates the type of site antenna (hotspot, micro, macro).
     building_height : int
         Height of surrounding buildings in meters (m).
     street_width : float
@@ -358,7 +358,7 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
 
         else:
             raise ValueError(
-                'Could not determine if cell is above or below roof line'
+                'Could not determine if transmitter is above or below roof line'
             )
 
     elif 0.1 < distance <= 0.2:
@@ -385,7 +385,7 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
 
         else:
             raise ValueError(
-                'Could not determine if cell is above or below roof line'
+                'Could not determine if transmitter is above or below roof line'
             )
 
     elif 0.2 < distance <= 0.6:
@@ -416,7 +416,7 @@ def extended_hata(frequency, distance, ant_height, ant_type, building_height,
 
         else:
             raise ValueError(
-                'Could not determine if cell is above or below roof line'
+                'Could not determine if transmitter is above or below roof line'
             )
 
     elif 0.6 < distance:
