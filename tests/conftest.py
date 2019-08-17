@@ -302,9 +302,10 @@ def setup_modulation_coding_lut():
 @pytest.fixture
 def setup_simulation_parameters():
     return  {
-        'iterations': 50,
+        'iterations': 50, #make sure this is set to 50 for exact test result
         'seed_value1': 1,
         'seed_value2': 2,
+        'los_breakpoint_m': 250,
         'tx_baseline_height': 30,
         'tx_upper_height': 40,
         'tx_power': 40,
@@ -314,6 +315,9 @@ def setup_simulation_parameters():
         'rx_losses': 4,
         'rx_misc_losses': 4,
         'rx_height': 1.5,
+        'building_height': 20,
+        'street_width': 20,
+        'above_roof': 0,
         'network_load': 50,
         'percentile': 10,
         'sectorization': 3,
@@ -322,6 +326,7 @@ def setup_simulation_parameters():
         'backhaul_distance_km_suburban': 2,
         'backhaul_distance_km_rural': 10,
     }
+
 
 
 @pytest.fixture

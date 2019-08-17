@@ -89,15 +89,10 @@ class SimulationManager(object):
         """
         results = []
 
-        seed_value1 = simulation_parameters['seed_value1']
-        seed_value2 = simulation_parameters['seed_value2']
-        iterations = simulation_parameters['iterations']
-        los_breakpoint_m = simulation_parameters['los_breakpoint_m']
-
         for receiver in self.receivers.values():
 
             path_loss, r_model, r_distance, type_of_sight = self.estimate_path_loss(
-                receiver, frequency, environment, seed_value1, iterations, los_breakpoint_m
+                receiver, frequency, environment, simulation_parameters
             )
 
             received_power = self.estimate_received_power(self.transmitter,
@@ -105,7 +100,7 @@ class SimulationManager(object):
             )
 
             interference, i_model, ave_distance, ave_inf_pl = self.estimate_interference(
-                receiver, frequency, environment, seed_value2, iterations, los_breakpoint_m)
+                receiver, frequency, environment, simulation_parameters)
 
             noise = self.estimate_noise(
                 bandwidth
@@ -150,8 +145,8 @@ class SimulationManager(object):
         return results
 
 
-    def estimate_path_loss(self, receiver, frequency,
-        environment, seed_value, iterations, los_breakpoint_m):
+    def estimate_path_loss(self, receiver, frequency,environment,
+        simulation_parameters):
         """
 
         Function to calculate the path loss between a transmitter
@@ -200,32 +195,25 @@ class SimulationManager(object):
         ant_height = self.transmitter.ant_height
         ant_type =  self.transmitter.ant_type
 
-        los_breakpoint_m = 250
-
-        if strt_distance < los_breakpoint_m :
+        if strt_distance < simulation_parameters['los_breakpoint_m'] :
             type_of_sight = 'los'
         else:
             type_of_sight = 'nlos'
-
-        building_height = 20
-        street_width = 20
-        above_roof = 0
-        location = receiver.indoor
 
         path_loss, model = path_loss_calculator(
             frequency,
             strt_distance,
             ant_height,
             ant_type,
-            building_height,
-            street_width,
+            simulation_parameters['building_height'],
+            simulation_parameters['street_width'],
             environment,
             type_of_sight,
             receiver.ue_height,
-            above_roof,
-            location,
-            seed_value,
-            iterations
+            simulation_parameters['above_roof'],
+            receiver.indoor,
+            simulation_parameters['seed_value1'],
+            simulation_parameters['iterations']
         )
 
         return path_loss, model, strt_distance, type_of_sight
@@ -275,7 +263,7 @@ class SimulationManager(object):
 
 
     def estimate_interference(self, receiver, frequency, environment,
-        seed_value, iterations, los_breakpoint_m):
+        simulation_parameters):
         """
         Calculate interference from other sites.
 
@@ -332,31 +320,25 @@ class SimulationManager(object):
             ant_height = interfering_transmitter.ant_height
             ant_type =  interfering_transmitter.ant_type
 
-            if interference_strt_distance < los_breakpoint_m:
+            if interference_strt_distance < simulation_parameters['los_breakpoint_m']:
                 type_of_sight = 'los'
             else:
                 type_of_sight = 'nlos'
-
-            building_height = 20
-            street_width = 20
-            type_of_sight = type_of_sight
-            above_roof = 0
-            indoor = receiver.indoor
 
             path_loss, model = path_loss_calculator(
                 frequency,
                 interference_strt_distance,
                 ant_height,
                 ant_type,
-                building_height,
-                street_width,
+                simulation_parameters['building_height'],
+                simulation_parameters['street_width'],
                 environment,
                 type_of_sight,
                 receiver.ue_height,
-                above_roof,
-                indoor,
-                seed_value,
-                iterations
+                simulation_parameters['above_roof'],
+                receiver.indoor,
+                simulation_parameters['seed_value2'],
+                simulation_parameters['iterations'],
             )
 
             received_interference = self.estimate_received_power(
