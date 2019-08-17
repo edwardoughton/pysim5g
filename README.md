@@ -10,7 +10,7 @@ Description
 
 Statistical analysis can be performed under different radio interference scenarios for assessing system-level performance of 4G/5G co-existence in the sub-6GHz spectrum bands. 
 
-Users can simulate the deployment of new networks delivering different levels of Quality of Service (QoS) for diffferent propagation environments.
+Users can simulate the deployment of new networks delivering different levels of Quality of Service (QoS) for various propagation environments.
 
 Quantified cost analytics provide insight into the economics of (i) ultra-dense networks, (ii) 5G spectral efficiency gains and (iii) the capacity and coverage of 4G/5G co-existence for sub-6GHz spectrum bands.
 
