@@ -11,147 +11,32 @@ import matplotlib.pyplot as plt
 from  matplotlib.ticker import FuncFormatter
 
 CONFIG = configparser.ConfigParser()
-CONFIG.read(os.path.join(os.path.dirname(__file__),'..','..','scripts', 'script_config.ini'))
+CONFIG.read(os.path.join(os.path.dirname(__file__),'..','scripts', 'script_config.ini'))
 BASE_PATH = CONFIG['file_locations']['base_path']
 
-DATA = os.path.join(BASE_PATH, 'intermediate', 'system_simulator')
-DATA_OUTPUT = os.path.join(BASE_PATH, '..', 'vis', 'vis_5g', 'figures')
+DATA = os.path.join(BASE_PATH, '..', 'results')
+DATA_OUTPUT = os.path.join(BASE_PATH, '..', 'vis', 'figures')
+
 
 if not os.path.exists(DATA_OUTPUT):
     os.mkdir(DATA_OUTPUT)
 
+
 def load_in_all_main_lut():
 
-    filenames = glob.iglob(os.path.join(DATA, '**/*test_lookup_table*'), recursive=True)
+    filenames = glob.iglob(os.path.join(DATA, 'full_tables', 'full_capacity*'))
 
     output = pd.concat((pd.read_csv(f) for f in filenames))
 
     output['capacity_per_Hz_km2'] = (
-        output['three_sector_capacity_mbps_km2'] / (output['bandwidth_MHz'] * 1e6)
+        output['capacity_mbps_km2'] / (output['bandwidth_MHz'] * 1e6)
         )
 
     output['sites_per_km2'] = output.sites_per_km2.round(1)
 
-    output['inter_site_distance_km'] = output['inter_site_distance'] / 1e3
+    output['inter_site_distance_km'] = output['inter_site_distance_m'] / 1e3
 
-    return output
-
-
-def plot_main_lut(data):
-
-    data['environment'] = data['environment'].replace(
-        {
-            'urban': 'Urban',
-            'suburban': 'Suburban',
-            'rural': 'Rural'
-        }
-    )
-
-    area_types = [
-        # 'urban',
-        # 'suburban',
-        # 'rural',
-        'all'
-    ]
-
-    for area_type in area_types:
-
-        if not area_type == 'all':
-            plotting_data = data.loc[data['environment'] == area_type]
-
-        else:
-            plotting_data = data
-
-        plotting_function1(plotting_data, area_type)
-
-        plotting_function3(plotting_data, 'path_loss_dB', 'Path Loss (dB)')
-        plotting_function3(plotting_data, 'received_power_dBm', 'Received Power (dBm)')
-        plotting_function3(plotting_data, 'interference_dBm', 'Interference (dBm)')
-        plotting_function3(plotting_data, 'sinr', 'SINR')
-        plotting_function3(plotting_data, 'spectral_efficiency_bps_hz', 'Spectral Efficiency (Bps/Hz)')
-        plotting_function3(plotting_data, 'three_sector_capacity_mbps_km2', 'Average Capacity (Mbps/km^2)')
-
-    return ('complete')
-
-
-def plotting_function1(data, filename):
-
-    data_subset = data[['sites_per_km2','frequency_GHz','mast_height_m',
-    'sinr', 'spectral_efficiency_bps_hz', 'capacity_per_Hz_km2']]
-
-    data_subset.columns = ['Density (Km^2)', 'Frequency (GHz)', 'Height (m)',
-        'SINR', 'SE', 'Capacity']
-
-    long_data = pd.melt(data_subset,
-        id_vars=['Density (Km^2)', 'Frequency (GHz)', 'Height (m)'],
-        value_vars=['SINR', 'SE', 'Capacity'])
-
-    long_data.columns = ['Density (Km^2)', 'Frequency (GHz)', 'Height (m)',
-        'Metric', 'Value']
-
-    sns.set(font_scale=1.1)
-
-    plot = sns.catplot(x='Density (Km^2)', y='Value', hue="Frequency (GHz)",
-        kind="bar", col="Height (m)", row="Metric", data=long_data,
-        sharey='row')
-
-    plot.axes[0,0].set_ylabel('SINR (dB)')
-    plot.axes[1,0].set_ylabel('SE (Bps/Hz)')
-    plot.axes[2,0].set_ylabel('Capacity (Bps/Hz/Km^2)')
-
-    plot.savefig(DATA_OUTPUT + '/capacity_barplot1_{}.png'.format(filename))
-
-    return 'completed {}'.format(filename)
-
-
-def plotting_function3(data, metric_lower, metric_higher):
-
-    data_subset = data[['inter_site_distance_km','frequency_GHz','mast_height_m',
-    metric_lower, 'spectral_efficiency_bps_hz', 'capacity_per_Hz_km2', 'environment']]
-
-    data_subset.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)', 'Height (m)',
-        metric_higher, 'SE', 'Capacity', 'Env']
-
-    # data_subset = data_subset[data_subset['Inter-Site Distance (km)'].isin([
-    #     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])]
-
-    plot = sns.FacetGrid(data_subset, row="Env", col="Height (m)", hue="Frequency (GHz)")
-
-    plot.map(sns.lineplot, "Inter-Site Distance (km)", metric_higher).add_legend()
-
-    plt.subplots_adjust(hspace=0.2, wspace=0.2, bottom=0.06)
-
-    plot.savefig(DATA_OUTPUT + '/{}_facet.png'.format(metric_lower))
-
-    return 'completed {}'.format(metric_lower)
-
-
-def load_in_individual_luts():
-
-    filenames = glob.iglob(os.path.join(DATA, '**/*test_capacity_data*.csv'), recursive=True)
-
-    output = pd.concat((pd.read_csv(f) for f in filenames))
-
-    output['capacity_per_Hz_km2'] = (
-        output['estimated_capacity'] / (output['bandwidth'] * 1e6)
-        )
-
-    output['sites_per_km2'] = output.sites_per_km2.round(1)
-
-    output['inter_site_distance_km'] = output['inter_site_distance'] / 1e3
-
-    return output
-
-
-def plot_individual_luts(data):
-
-    # data = data[data['inter_site_distance_km'].isin([
-    #     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])]
-
-    # data = data[data['inter_site_distance_km'].isin([
-    #     1, 2, 3, 4, 5, 6, 10, 15, 20, 25, 30, 35])]
-
-    data = data.replace(
+    output = output.replace(
         {
             'environment':{
                 'urban': 'Urban',
@@ -161,95 +46,300 @@ def plot_individual_luts(data):
         }
     )
 
-    plotting_function6(data)
-
-    plotting_function7(data)
-
-    return ('complete')
+    return output
 
 
-def plotting_function6(data):
+def plotting_function1(data):
 
-    data_subset = data[['inter_site_distance_km','frequency','mast_height',
-    'path_loss', 'received_power', 'interference', 'environment']]
+    data_subset = data[['sites_per_km2','frequency_GHz','path_loss_dB', 'received_power_dB',
+    'interference_dB', 'sinr_dB', 'spectral_efficiency_bps_hz', 'capacity_mbps_km2']]
 
-    data_subset.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)', 'Height (m)',
-        'Path Loss', 'Received Power', 'Interference', 'Environment']
+    data_subset.columns = ['Density (km^2)', 'Frequency (GHz)', 'Path Loss',
+        'Received Power', 'Interference', 'SINR', 'SE',
+        'Channel Capacity']
 
     long_data = pd.melt(data_subset,
-        id_vars=['Inter-Site Distance (km)', 'Frequency (GHz)', 'Height (m)', 'Environment'],
-        value_vars=['Path Loss', 'Received Power', 'Interference'])
+        id_vars=['Density (km^2)', 'Frequency (GHz)'],
+        value_vars=['Path Loss', 'Received Power', 'Interference', 'SINR', 'SE',
+        'Channel Capacity'])
 
-    long_data.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)', 'Height (m)',
-    'Environment', 'Metric', 'Value']
+    long_data.columns = ['Density (km^2)', 'Frequency (GHz)', 'Metric', 'Value']
 
-    ax = sns.relplot(x="Inter-Site Distance (km)", y='Value', hue="Environment", row="Metric",
-        col='Height (m)', kind="line", data=long_data, palette=sns.set_palette("husl"),
-        facet_kws=dict(sharex=False, sharey=False), hue_order=["Urban", "Suburban", "Rural"],
-        legend="full",)
+    long_data['Frequency (GHz)'] = long_data['Frequency (GHz)'].astype(str) + 'GHz'
 
-    handles = ax._legend_data.values()
-    labels = ax._legend_data.keys()
-    ax._legend.remove()
-    ax.fig.legend(handles=handles, labels=labels, loc='lower center', ncol=4)
+    sns.set(font_scale=1.1)
 
-    ax.axes[0,0].set_ylabel('Path Loss (dB)')
-    ax.axes[1,0].set_ylabel('Receiver Power (dB)')
-    ax.axes[2,0].set_ylabel('Interference (dB)')
+    plot = sns.catplot(x='Density (km^2)', y='Value', hue="Frequency (GHz)", kind="bar",
+        col="Metric", col_wrap=2, data=long_data, palette=sns.color_palette("husl", 5),
+        sharey=False, sharex=False, legend="full")
 
-    plt.subplots_adjust(hspace=0.2, wspace=0.2, bottom=0.07)
+    handles = plot._legend_data.values()
+    labels = plot._legend_data.keys()
+    plot._legend.remove()
+    plot.fig.legend(handles=handles, labels=labels, loc='lower center', ncol=5)
 
-    ax.savefig(DATA_OUTPUT + '/facet_lineplot_1.png')
+    plot.axes[0].set_ylabel('Path Loss (dB)')
+    plot.axes[1].set_ylabel('Received Power (dBm)')
+    plot.axes[2].set_ylabel('Interference (dBm)')
+    plot.axes[3].set_ylabel('SINR (dB)')
+    plot.axes[4].set_ylabel('SE (Bps/Hz)')
+    plot.axes[5].set_ylabel('Capacity (Mbps/km^2)')
 
-    plt.cla()
+    plot.axes[0].set_xlabel('Site Density (km^2)')
+    plot.axes[1].set_xlabel('Site Density (km^2)')
+    plot.axes[2].set_xlabel('Site Density (km^2)')
+    plot.axes[3].set_xlabel('Site Density (km^2)')
+    plot.axes[4].set_xlabel('Site Density (km^2)')
+    plot.axes[5].set_xlabel('Site Density (km^2)')
 
-    return print('completed')
+    plt.subplots_adjust(hspace=0.3, wspace=0.3, bottom=0.07)
+
+    plot.savefig(DATA_OUTPUT + '/frequency_capacity_barplot_area.png')
+
+    return print('completed (frequency) barplot (area)')
 
 
-def plotting_function7(data):
+def plotting_function1_isd(data):
 
-    data_subset = data[['inter_site_distance_km','frequency','mast_height',
-    'sinr', 'spectral_efficiency', 'estimated_capacity', 'environment']]
+    data_subset = data[['inter_site_distance_km','frequency_GHz','path_loss_dB',
+    'received_power_dB', 'interference_dB', 'sinr_dB', 'spectral_efficiency_bps_hz',
+    'capacity_mbps_km2']]
 
-    data_subset.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)', 'Height (m)',
-        'SINR', 'SE', 'Capacity', 'Environment']
+    data_subset.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)', 'Path Loss',
+        'Received Power', 'Interference', 'SINR', 'SE',
+        'Channel Capacity']
 
     long_data = pd.melt(data_subset,
-        id_vars=['Inter-Site Distance (km)', 'Frequency (GHz)', 'Height (m)', 'Environment'],
-        value_vars=['SINR', 'SE', 'Capacity'])
+        id_vars=['Inter-Site Distance (km)', 'Frequency (GHz)'],
+        value_vars=['Path Loss', 'Received Power', 'Interference',
+            'SINR', 'SE', 'Channel Capacity'])
 
-    long_data.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)', 'Height (m)',
+    long_data.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)',
+        'Metric', 'Value']
+
+    sns.set(font_scale=1.1)
+
+    plot = sns.relplot(x="Inter-Site Distance (km)", y='Value', hue="Frequency (GHz)",
+        col="Metric", col_wrap=2, palette=sns.color_palette("husl", 5),
+        kind="line", data=long_data,
+        facet_kws=dict(sharex=False, sharey=False),
+        legend="full")
+
+    handles = plot._legend_data.values()
+    labels = plot._legend_data.keys()
+    plot._legend.remove()
+    plot.fig.legend(handles=handles, labels=labels, loc='lower center', ncol=6)
+
+    plot.axes[0].set_ylabel('Path Loss (dB)')
+    plot.axes[1].set_ylabel('Received Power (dBm)')
+    plot.axes[2].set_ylabel('Interference (dBm)')
+    plot.axes[3].set_ylabel('SINR (dB)')
+    plot.axes[4].set_ylabel('SE (Bps/Hz)')
+    plot.axes[5].set_ylabel('Capacity (Mbps km^2)')
+
+    plot.axes[0].set_xlabel('Inter-Site Distance (km)')
+    plot.axes[1].set_xlabel('Inter-Site Distance (km)')
+    plot.axes[2].set_xlabel('Inter-Site Distance (km)')
+    plot.axes[3].set_xlabel('Inter-Site Distance (km)')
+    plot.axes[4].set_xlabel('Inter-Site Distance (km)')
+    plot.axes[5].set_xlabel('Inter-Site Distance (km)')
+
+    plt.subplots_adjust(hspace=0.3, wspace=0.3, bottom=0.07)
+
+    plot.savefig(DATA_OUTPUT + '/frequency_capacity_barplot_isd.png')
+
+    return print('completed (frequency) barplot (isd)')
+
+
+def plotting_function2(data):
+
+    data_subset = data[['inter_site_distance_km','frequency_GHz','path_loss_dB',
+        'received_power_dB', 'interference_dB', 'sinr_dB', 'spectral_efficiency_bps_hz',
+        'capacity_mbps_km2', 'environment']]
+
+    data_subset.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)', 'Path Loss',
+        'Received Power', 'Interference', 'SINR', 'SE', 'Channel Capacity','Environment']
+
+    long_data = pd.melt(data_subset,
+        id_vars=['Inter-Site Distance (km)', 'Frequency (GHz)', 'Environment'],
+        value_vars=['Path Loss',
+        'Received Power', 'Interference', 'SINR', 'SE', 'Channel Capacity'])
+
+    long_data.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)',
     'Environment', 'Metric', 'Value']
 
-    ax = sns.relplot(x="Inter-Site Distance (km)", y='Value', hue="Environment", row="Metric",
-        col='Height (m)', kind="line", data=long_data, palette=sns.set_palette("husl"),
+    plot = sns.relplot(x="Inter-Site Distance (km)", y='Value', hue="Environment",
+        col="Metric", col_wrap=2,
+        kind="line", data=long_data, palette=sns.color_palette("husl", 3),
         facet_kws=dict(sharex=False, sharey=False), hue_order=["Urban", "Suburban", "Rural"],
         legend="full")
 
-    ax.axes[0,0].set_ylabel('SINR')
-    ax.axes[1,0].set_ylabel('SE (Bps/Hz)')
-    ax.axes[2,0].set_ylabel('Capacity (Mbps/km^2)')
+    handles = plot._legend_data.values()
+    labels = plot._legend_data.keys()
+    plot._legend.remove()
+    plot.fig.legend(handles=handles, labels=labels, loc='lower center', ncol=4)
 
-    handles = ax._legend_data.values()
-    labels = ax._legend_data.keys()
-    ax._legend.remove()
-    ax.fig.legend(handles=handles, labels=labels, loc='lower center', ncol=4)
+    plot.axes[0].set_ylabel('Path Loss (dB)')
+    plot.axes[1].set_ylabel('Received Power (dBm)')
+    plot.axes[2].set_ylabel('Interference (dBm)')
+    plot.axes[3].set_ylabel('SINR (dB)')
+    plot.axes[4].set_ylabel('SE (Bps/Hz)')
+    plot.axes[5].set_ylabel('Channel Capacity (Mbps km^2)')
 
-    plt.subplots_adjust(hspace=0.2, wspace=0.2, bottom=0.07)
+    plot.axes[0].set_xlabel('Inter-Site Distance (km)')
+    plot.axes[1].set_xlabel('Inter-Site Distance (km)')
+    plot.axes[2].set_xlabel('Inter-Site Distance (km)')
+    plot.axes[3].set_xlabel('Inter-Site Distance (km)')
+    plot.axes[4].set_xlabel('Inter-Site Distance (km)')
+    plot.axes[5].set_xlabel('Inter-Site Distance (km)')
 
-    ax.savefig(DATA_OUTPUT + '/facet_lineplot2.png')
+    plt.subplots_adjust(hspace=0.3, wspace=0.3, bottom=0.07)
 
-    plt.cla()
+    plot.savefig(DATA_OUTPUT + '/urban_rural_capacity_lineplot.png')
 
-    return print('completed')
+    return print('completed (urban-rural) replot (isd)')
+
+
+def load_summary_lut(max_isd_distance):
+
+    filename = os.path.join(DATA, 'percentile_50_capacity_lut.csv')
+
+    output = pd.read_csv(filename)
+
+    output['sites_per_km2'] = output.sites_per_km2.round(4)
+
+    output['inter_site_distance_km'] = output['inter_site_distance_m'] / 1e3
+
+    output = output[['inter_site_distance_km', 'site_area_km2', 'sites_per_km2',
+        'capacity_mbps_km2', 'capacity_mbps',
+        'environment',
+        'ran_sector_antenna_costs_km2',
+        'ran_remote_radio_unit_costs_km2', 'ran_baseband_unit_costs_km2',
+        'ran_router_costs_km2', 'civil_tower_costs_km2',
+        'civil_material_costs_km2', 'civil_transportation_costs_km2',
+        'civil_installation_costs_km2', 'power_battery_system_costs_km2',
+        'backhaul_fiber_backhaul_costs_km2',
+        'backhaul_microwave_backhaul_1m_costs_km2'
+    ]]
+
+    output = output.reset_index().reset_index(drop=True)
+
+    ISD = output.inter_site_distance_km.astype(int) < max_isd_distance
+    output = output[ISD]
+
+    return output
+
+def generate_long_data(data, x_axis_metric_lower, x_axis_metric_final):
+
+    output = data[[
+        x_axis_metric_lower,
+        'capacity_mbps_km2',
+        'environment',
+        'ran_sector_antenna_costs_km2',
+        'ran_remote_radio_unit_costs_km2', 'ran_baseband_unit_costs_km2',
+        'ran_router_costs_km2', 'civil_tower_costs_km2',
+        'civil_material_costs_km2', 'civil_transportation_costs_km2',
+        'civil_installation_costs_km2', 'power_battery_system_costs_km2',
+        'backhaul_fiber_backhaul_costs_km2',
+        'backhaul_microwave_backhaul_1m_costs_km2'
+    ]]
+
+    output = pd.melt(output,
+        id_vars=[x_axis_metric_lower, 'environment'],
+        value_vars=[
+            'ran_sector_antenna_costs_km2',
+            'ran_remote_radio_unit_costs_km2',
+            'ran_baseband_unit_costs_km2',
+            'ran_router_costs_km2', 'civil_tower_costs_km2',
+            'civil_material_costs_km2', 'civil_transportation_costs_km2',
+            'civil_installation_costs_km2', 'power_battery_system_costs_km2',
+            'backhaul_fiber_backhaul_costs_km2',
+            'backhaul_microwave_backhaul_1m_costs_km2'
+        ])
+
+    output.columns = ['x_axis_value', 'Environment', 'Component', 'gross_value']
+
+    output['Value'] = round(output['gross_value'] / 1000)
+
+    output = output[['x_axis_value', 'Environment', 'Component', 'Value']]
+
+    output['Metric'] = output['Component'].str.split("_", n = 1, expand = True) [0]
+
+    output = output.replace(
+        {
+            'Metric':{
+                'ran': 'RAN',
+                'civil': 'Civil works',
+                'power': 'Power',
+                'backhaul': 'Backhaul',
+            }
+        }
+    )
+
+    output = output.replace(
+        {
+            'Environment':{
+                'urban': 'Urban',
+                'suburban': 'Suburban',
+                'rural': 'Rural',
+            }
+        }
+    )
+
+    return output
+
+
+def plotting_function3(data):
+
+    data_isd = generate_long_data(data, 'inter_site_distance_km', 'ISD')
+    data_isd['Density Metric'] = 'ISD (km)'
+
+    #'site_area_km2', 'sites_per_km2',
+    data_density = generate_long_data(data, 'sites_per_km2', 'Site Density (km^2)')
+    data_density['Density Metric'] = 'Site Density (km^2)'
+
+    all_data = pd.concat([data_isd, data_density], axis= 0)
+
+    all_data['x_axis_value'] = round(all_data['x_axis_value'], 3)
+
+    bins = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
+    all_data['x_axis_value_binned'] = pd.cut(all_data['x_axis_value'], bins)
+
+    plot = sns.catplot(x='x_axis_value_binned', y='Value', hue="Metric", kind='bar',
+        row="Environment", col='Density Metric',# col_wrap=1,
+        data=all_data, palette=sns.color_palette("husl", 5),
+        sharey=True, sharex=False, legend="full")
+
+    plot.set_xticklabels(rotation=45)
+
+    plot.axes[0,0].set_ylabel('Cost (USD$k)')
+    plot.axes[1,0].set_ylabel('Cost (USD$k)')
+    plot.axes[2,0].set_ylabel('Cost (USD$k)')
+
+    plot.axes[0,1].set_xlabel('')
+    plot.axes[1,1].set_xlabel('')
+    plot.axes[2,1].set_xlabel('')
+    plot.axes[2,0].set_xlabel('')
+
+    plt.subplots_adjust(hspace=0.4, wspace=0.05, bottom=0.3)
+
+    plot.savefig(DATA_OUTPUT + '/costs_capacity_barplot_isd_density.png')
+
+    return print('completed (capacity-cost) replot (isd)')
 
 
 if __name__ == '__main__':
 
-    data = load_in_all_main_lut()
+    # data = load_in_all_main_lut()
 
-    plot_main_lut(data)
+    # plotting_function1(data)
 
-    individual_data = load_in_individual_luts()
+    # plotting_function1_isd(data)
 
-    plot_individual_luts(individual_data)
+    # plotting_function2(data)
+
+    max_isd_distance = 10
+
+    data = load_summary_lut(max_isd_distance)
+
+    plotting_function3(data)

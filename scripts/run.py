@@ -70,12 +70,12 @@ def generate_receivers(site_area, simulation_parameters, grid):
 
         x_axis = np.linspace(
             minx, maxx, num=(
-                int(math.sqrt(geom.area) / (math.sqrt(geom.area)/10))
+                int(math.sqrt(geom.area) / (math.sqrt(geom.area)/20))
                 )
             )
         y_axis = np.linspace(
             miny, maxy, num=(
-                int(math.sqrt(geom.area) / (math.sqrt(geom.area)/10))
+                int(math.sqrt(geom.area) / (math.sqrt(geom.area)/20))
                 )
             )
 
@@ -115,6 +115,8 @@ def generate_receivers(site_area, simulation_parameters, grid):
         length = int(path.length)
         increment = int(length / 20)
 
+        indoor = simulation_parameters['indoor_users_percentage'] / 100
+
         id_number = 0
         for increment_value in range(1, 11):
             point = path.interpolate(increment * increment_value)
@@ -129,7 +131,7 @@ def generate_receivers(site_area, simulation_parameters, grid):
                     "losses": simulation_parameters['rx_losses'],
                     "ue_height": float(simulation_parameters['rx_height']),
                     "indoor": (True if float(indoor_outdoor_probability) < \
-                        float(0.5) else False),
+                        float(indoor) else False),
                 }
             })
             id_number += 1
@@ -555,7 +557,7 @@ def write_frequency_lookup_table(results, environment, site_radius,
             (
                 'results_type',
                 'environment',
-                'inter_site_distance',
+                'inter_site_distance_m',
                 'site_area_km2',
                 'sites_per_km2',
                 'frequency_GHz',
@@ -654,17 +656,17 @@ def write_cost_lookup_table(results, environment, site_radius,
                 'capacity_mbps',
                 'capacity_mbps_km2',
                 'total_deployment_costs_km2',
-                'sector_antenna_costs_km2',
-                'remote_radio_unit_costs_km2',
-                'baseband_unit_costs_km2',
-                'router_costs_km2',
-                'tower_costs_km2',
+                'ran_sector_antenna_costs_km2',
+                'ran_remote_radio_unit_costs_km2',
+                'ran_baseband_unit_costs_km2',
+                'ran_router_costs_km2',
+                'civil_tower_costs_km2',
                 'civil_material_costs_km2',
-                'transportation_costs_km2',
-                'installation_costs_km2',
-                'battery_system_costs_km2',
-                'fiber_backhaul_costs_km2',
-                'microwave_backhaul_1m_costs_km2',
+                'civil_transportation_costs_km2',
+                'civil_installation_costs_km2',
+                'power_battery_system_costs_km2',
+                'backhaul_fiber_backhaul_costs_km2',
+                'backhaul_microwave_backhaul_1m_costs_km2',
             )
         )
     else:
@@ -745,7 +747,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
         'type': 'Feature',
         'geometry': {
             'type': 'Point',
-            'coordinates': (0, 51.476),
+            'coordinates': (-0.07496, 51.42411),
             },
         'properties': {
             'site_id': 'Crystal Palace Radio Tower'
@@ -774,7 +776,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
                     projected_crs
                     )
 
-            receivers = generate_receivers(site_area, SIMULATION_PARAMETERS, 0)
+            receivers = generate_receivers(site_area, SIMULATION_PARAMETERS, 1)
 
             for frequency, bandwidth, generation in spectrum_portfolio:
                 for ant_height in ant_heights:
@@ -871,6 +873,7 @@ if __name__ == '__main__':
         'iterations': 100,
         'seed_value1': 1,
         'seed_value2': 2,
+        'indoor_users_percentage': 50,
         'los_breakpoint_m': 250,
         'tx_baseline_height': 30,
         'tx_upper_height': 40,
@@ -885,12 +888,12 @@ if __name__ == '__main__':
         'street_width': 20,
         'above_roof': 0,
         'network_load': 50,
-        'percentile': 10,
+        'percentile': 50,
         'sectorization': 3,
         'overbooking_factor': 50,
         'backhaul_distance_km_urban': 1,
         'backhaul_distance_km_suburban': 2,
-        'backhaul_distance_km_rural': 10,
+        'backhaul_distance_km_rural': 3,
     }
 
     COSTS = {
@@ -917,9 +920,9 @@ if __name__ == '__main__':
         (3.5, 40, '5G'),
     ]
 
-    ant_height = [
+    ANT_HEIGHT = [
         (30),
-        (40)
+        # (40)
     ]
 
     MODULATION_AND_CODING_LUT =[
@@ -961,20 +964,22 @@ if __name__ == '__main__':
         for n in range(min, max, increment):
             yield n
 
-    site_RADII = {
+    INCREMENT = (200, 2000, 50)
+
+    SITE_RADII = {
         'urban':
-            generate_site_radii(250, 2000, 500),
+            generate_site_radii(INCREMENT[0],INCREMENT[1],INCREMENT[2]),
         'suburban':
-            generate_site_radii(250, 2000, 500),
+            generate_site_radii(INCREMENT[0],INCREMENT[1],INCREMENT[2]),
         'rural':
-            generate_site_radii(250, 2000, 500)
+            generate_site_radii(INCREMENT[0],INCREMENT[1],INCREMENT[2])
         }
 
     run_simulator(
         SIMULATION_PARAMETERS,
         SPECTRUM_PORTFOLIO,
-        ant_height,
-        site_RADII,
+        ANT_HEIGHT,
+        SITE_RADII,
         MODULATION_AND_CODING_LUT,
         COSTS
         )

@@ -55,8 +55,10 @@ src/smif/sample_project/results/*
 
 # data file
 data/*
-vis/figures*
 results/*
+vis/gdalwmscache/*
+vis/figures/*
+
 # Other files
 *.ipynb
 src/smif/app/.nyc_output
