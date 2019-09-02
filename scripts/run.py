@@ -655,6 +655,7 @@ def write_cost_lookup_table(results, environment, site_radius,
                 'sites_per_km2',
                 'capacity_mbps',
                 'capacity_mbps_km2',
+                'strategy',
                 'total_deployment_costs_km2',
                 'ran_sector_antenna_costs_km2',
                 'ran_remote_radio_unit_costs_km2',
@@ -673,29 +674,31 @@ def write_cost_lookup_table(results, environment, site_radius,
         lut_file = open(directory, 'a', newline='')
         lut_writer = csv.writer(lut_file)
 
-    lut_writer.writerow(
-        (
-            results['results_type'],
-            environment,
-            results['inter_site_distance'],
-            results['site_area_km2'],
-            results['sites_per_km2'],
-            results['capacity_mbps'],
-            results['capacity_mbps_km2'] * sectors,
-            results['total_deployment_costs_km2'],
-            results['sector_antenna_costs_km2'],
-            results['remote_radio_unit_costs_km2'],
-            results['baseband_unit_costs_km2'],
-            results['router_costs_km2'],
-            results['tower_costs_km2'],
-            results['civil_material_costs_km2'],
-            results['transportation_costs_km2'],
-            results['installation_costs_km2'],
-            results['battery_system_costs_km2'],
-            results['fiber_backhaul_costs_km2'],
-            results['microwave_backhaul_1m_costs_km2'],
+    for result in results:
+        lut_writer.writerow(
+            (
+                result['results_type'],
+                environment,
+                result['inter_site_distance'],
+                result['site_area_km2'],
+                result['sites_per_km2'],
+                result['capacity_mbps'],
+                result['capacity_mbps_km2'] * sectors,
+                result['strategy'],
+                result['total_deployment_costs_km2'],
+                result['sector_antenna_costs_km2'],
+                result['remote_radio_unit_costs_km2'],
+                result['baseband_unit_costs_km2'],
+                result['router_costs_km2'],
+                result['tower_costs_km2'],
+                result['civil_material_costs_km2'],
+                result['transportation_costs_km2'],
+                result['installation_costs_km2'],
+                result['battery_system_costs_km2'],
+                result['fiber_backhaul_costs_km2'],
+                result['microwave_backhaul_1m_costs_km2'],
+            )
         )
-    )
 
     lut_file.close()
 
@@ -894,6 +897,7 @@ if __name__ == '__main__':
         'backhaul_distance_km_urban': 1,
         'backhaul_distance_km_suburban': 2,
         'backhaul_distance_km_rural': 3,
+        'number_of_mnos_sharing': 2,
     }
 
     COSTS = {
@@ -902,6 +906,7 @@ if __name__ == '__main__':
         'single_remote_radio_unit': 4000,
         'single_baseband_unit': 10000,
         'router': 2000,
+        'site_rental': 5000,
         'tower': 10000,
         'civil_materials': 5000,
         'transportation': 10000,
@@ -926,23 +931,25 @@ if __name__ == '__main__':
     ]
 
     MODULATION_AND_CODING_LUT =[
+        # ETSI. 2018. ‘5G; NR; Physical Layer Procedures for Data
+        # (3GPP TS 38.214 Version 15.3.0 Release 15)’. Valbonne, France: ETSI.
         # CQI Index	Modulation	Coding rate
         # Spectral efficiency (bps/Hz) SINR estimate (dB)
-        ('4G', 1, 'QPSK',	0.0762,	0.1523, -6.7),
-        ('4G', 2, 'QPSK',	0.1172,	0.2344, -4.7),
-        ('4G', 3, 'QPSK',	0.1885,	0.377, -2.3),
-        ('4G', 4, 'QPSK',	0.3008,	0.6016, 0.2),
-        ('4G', 5, 'QPSK',	0.4385,	0.877, 2.4),
-        ('4G', 6, 'QPSK',	0.5879,	1.1758,	4.3),
-        ('4G', 7, '16QAM', 0.3691, 1.4766, 5.9),
-        ('4G', 8, '16QAM', 0.4785, 1.9141, 8.1),
-        ('4G', 9, '16QAM', 0.6016, 2.4063, 10.3),
-        ('4G', 10, '64QAM', 0.4551, 2.7305, 11.7),
-        ('4G', 11, '64QAM', 0.5537, 3.3223, 14.1),
-        ('4G', 12, '64QAM', 0.6504, 3.9023, 16.3),
-        ('4G', 13, '64QAM', 0.7539, 4.5234, 18.7),
-        ('4G', 14, '64QAM', 0.8525, 5.1152, 21),
-        ('4G', 15, '64QAM', 0.9258, 5.5547, 22.7),
+        ('4G', 1, 'QPSK', 78,	0.1523, -6.7),
+        ('4G', 2, 'QPSK', 120, 0.2344, -4.7),
+        ('4G', 3, 'QPSK', 193, 0.377, -2.3),
+        ('4G', 4, 'QPSK', 308, 0.6016, 0.2),
+        ('4G', 5, 'QPSK', 449, 0.877, 2.4),
+        ('4G', 6, 'QPSK', 602, 1.1758, 4.3),
+        ('4G', 7, '16QAM', 378, 1.4766, 5.9),
+        ('4G', 8, '16QAM', 490, 1.9141, 8.1),
+        ('4G', 9, '16QAM', 616, 2.4063, 10.3),
+        ('4G', 10, '64QAM', 466, 2.7305, 11.7),
+        ('4G', 11, '64QAM', 567, 3.3223, 14.1),
+        ('4G', 12, '64QAM', 666, 3.9023, 16.3),
+        ('4G', 13, '64QAM', 772, 4.5234, 18.7),
+        ('4G', 14, '64QAM', 973, 5.1152, 21),
+        ('4G', 15, '64QAM', 948, 5.5547, 22.7),
         ('5G', 1, 'QPSK', 78, 0.1523, -6.7),
         ('5G', 2, 'QPSK', 193, 0.377, -4.7),
         ('5G', 3, 'QPSK', 449, 0.877, -2.3),
@@ -964,7 +971,7 @@ if __name__ == '__main__':
         for n in range(min, max, increment):
             yield n
 
-    INCREMENT = (200, 2000, 50)
+    INCREMENT = (200, 1000, 500)
 
     SITE_RADII = {
         'urban':
