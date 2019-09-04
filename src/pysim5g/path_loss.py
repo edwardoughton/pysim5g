@@ -61,28 +61,18 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type,
         Type of model used for path loss estimation.
 
     """
-    if 0.03 < frequency <= 3:
+    if 0.05 < frequency <= 100:
 
-        free_space_path_loss = free_space(
-            frequency, distance, ant_height, ue_height, seed_value, iterations
+        path_loss = etsi_tr_138_901(frequency, distance, ant_height, ant_type,
+            building_height, street_width, settlement_type, type_of_sight,
+            ue_height, above_roof, indoor, seed_value, iterations
         )
 
-        extended_hata_path_loss = extended_hata(
-            frequency, distance, ant_height, ant_type, building_height,
-            street_width, settlement_type, type_of_sight, ue_height,
-            above_roof, seed_value, iterations
+        path_loss = path_loss + outdoor_to_indoor_path_loss(
+            frequency, indoor, seed_value
         )
 
-        path_loss, model = determine_path_loss(
-            free_space_path_loss, extended_hata_path_loss
-        )
-
-    elif 3 <= frequency < 6:
-
-        path_loss = uma_nlos_optional(frequency, distance, ant_height,
-            ue_height, seed_value, iterations)
-
-        model = 'uma_nlos_optional'
+        model = 'etsi_tr_138_901'
 
     else:
 
@@ -90,346 +80,136 @@ def path_loss_calculator(frequency, distance, ant_height, ant_type,
             "frequency of {} is NOT within correct range".format(frequency)
         )
 
-    path_loss = path_loss + outdoor_to_indoor_path_loss(
-        frequency, indoor, seed_value
-    )
-
-    return round(path_loss, 2), model
+    return round(path_loss), model
 
 
-def determine_path_loss(free_space_path_loss, extended_hata_path_loss):
+def etsi_tr_138_901(frequency, distance, ant_height, ant_type,
+    building_height, street_width, settlement_type, type_of_sight,
+    ue_height, above_roof, indoor, seed_value, iterations):
     """
 
-    Model guidance states that 'when L [median path loss] is below
-    the free space attenuation for the same distance, the free space
-    attenuation is used instead.'
+    Model requires:
+        - Frequency in gigahertz
+        - Distance in meters
 
-    Parameters
-    ----------
-    free_space_path_loss : int
-        The path loss resulting from the use of the Free Space model (dB).
-    extended_hata_path_loss : int
-        The path loss resulting from the use of the Extended Hata model (dB).
-
-    Returns
-    -------
-    path_loss : float
-        Path loss in decibels (dB)
-    model : string
-        Type of model used for path loss estimation.
+    c = speed of light
+    he = effective environment height
+    hbs = effective antenna height
+    hut = effective user terminal height
 
     """
-    if extended_hata_path_loss < free_space_path_loss:
+    fc = frequency
+    c = 3e8
 
-        path_loss = free_space_path_loss
+    he = 1 #enviroment_height
+    hbs = ant_height
+    hut = ue_height
+    h_apost_bs = ant_height - ue_height
+    h_apost_ut = ue_height - he
+    w = street_width # mean street width is 20m
+    h = building_height # mean building height
 
-        model = 'free_space_path_loss'
-    else:
+    dbp = 2 * pi * hbs * hut * (fc * 1e9) / c
+    d_apost_bp = 4 * h_apost_bs * h_apost_ut * (fc*1e9) / c
+    d2d_in = 10 #mean d2d_in value
+    d2d_out = distance - d2d_in
+    d2d = d2d_out + d2d_in
+    d3d = sqrt((d2d_out + d2d_in)**2 + (hbs - hut)**2)
 
-        path_loss = extended_hata_path_loss
+    check_3gpp_applicability(building_height, street_width, ant_height, ue_height)
 
-        model = 'extended_hata_path_loss'
+    if settlement_type == 'suburban' or settlement_type == 'rural':
+        pl1 = round(
+            20*np.log10(40*pi*d3d*fc/3) + min(0.03*h**1.72,10) *
+            np.log10(d3d) - min(0.044*h**1.72,14.77) +
+            0.002*np.log10(h)*d3d +
+            generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value)
+        )
 
-    return path_loss, model
+        if 10 <= d2d <= dbp:
+            if type_of_sight == 'los':
+                return pl1
+        pl_rma_los = pl1
 
+        pl2 = round(
+            20*np.log10(40*pi*dbp*fc/3) + min(0.03*h**1.72,10) *
+            np.log10(dbp) - min(0.044*h**1.72,14.77) +
+            0.002*np.log10(h)*dbp +
+            generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value) +
+            40*np.log10(d3d / dbp) +
+            generate_log_normal_dist_value(fc, 1, 6, iterations, seed_value)
+        )
 
-def free_space(frequency, distance, ant_height, ue_height,
-    seed_value, iterations):
-    """
-    Implements the Free Space path loss model.
+        if dbp <= d2d <= 10000:
+            if type_of_sight == 'los':
+                return pl2
+        pl_rma_los = pl2
 
-    Parameters
-    ----------
-    frequency : int
-        Carrier band (f) required in MHz.
-    distance : int
-        Distance (d) between transmitter and receiver (km).
-    ant_height : int
-        Transmitter antenna height (h1) (m, above ground).
-    ue_height : int
-        Receiver antenna height (h2) (m, above ground).
-    sigma : int
-        Variation in path loss (dB) which is 2.5dB for free space.
+        if type_of_sight == 'nlos':
 
-    Returns
-    -------
-    path_loss : float
-        Path loss in decibels (dB)
+            pl_apostrophe_rma_nlos = round(
+                161.04 - 7.1 * np.log10(w)+7.5*np.log10(h) -
+                (24.37 - 3.7 * (h/hbs)**2)*np.log10(hbs) +
+                (43.42 - 3.1*np.log10(hbs))*(np.log10(d3d)-3) +
+                20*np.log10(fc) - (3.2 * (np.log10(11.75*hut))**2 - 4.97) +
+                generate_log_normal_dist_value(fc, 1, 8, iterations, seed_value)
+            )
 
-    """
-    #model requires frequency in MHz rather than GHz.
-    frequency = frequency*1000
-    #model requires distance in kilometers rather than meters.
-    distance = distance/1000
+            # # currently does not cap at 5km, which this should
+            pl_rma_nlos = max(pl_apostrophe_rma_nlos, pl_rma_los)
 
-    random_variation = generate_log_normal_dist_value(
-        frequency, 1, 2.5, iterations, seed_value
-    )
+            return pl_rma_nlos
 
-    path_loss = (
-        32.4 + 10*np.log10((((ant_height - ue_height)/1000)**2 + \
-        distance**2)) + (20*np.log10(frequency) + random_variation)
-    )
+        if d2d > 10000:
+            return uma_nlos_optional(frequency, distance, ant_height, ue_height,
+                seed_value, iterations)
 
-    return round(path_loss, 2)
+    elif settlement_type == 'urban':
 
+        pl1 = round(
+            28 + 22 * np.log10(d3d) + 20 * np.log10(fc) +
+            generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value)
+        )
 
-def extended_hata(frequency, distance, ant_height, ant_type, building_height,
-    street_width, settlement_type, type_of_sight, ue_height, above_roof,
-    seed_value, iterations):
-    """
-    Implements the Extended Hata path loss model.
+        if 10 <= d2d <= d_apost_bp:
+            if type_of_sight == 'los':
+                return pl1
+            pl_uma_los = pl1
 
-    Parameters
-    ----------
-    frequency : int
-        Carrier band (f) required in MHz.
-    distance : int
-        Distance (d) between transmitter and receiver (km).
-    ant_height : int
-        Transmitter antenna height (h1) (m, above ground).
-    ue_height : int
-        Receiver antenna height (h2) (m, above ground).
-    env : string
-        General environment (urban/suburban/rural)
-    L : int
-        Median path loss (dB)
-    sigma : int
-        Variation in path loss (dB)
+        pl2 = round(
+            28 + 40*np.log10(d3d) + 20 * np.log10(fc) -
+            9*np.log10((d_apost_bp)**2 + (hbs-hut)**2) +
+            generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value)
+        )
 
-    Returns
-    -------
-    path_loss : float
-        Path loss in decibels (dB)
+        if d_apost_bp <= d2d <= 5000:
+            if type_of_sight == 'los':
+                return pl2
+        pl_uma_los = pl2
 
-    """
-    #model requires frequency in MHz rather than GHz.
-    frequency = frequency*1000
-    #model requires distance in kilometers rather than meters.
-    distance = distance/1000
+        if type_of_sight == 'nlos':
 
-    #find smallest value
-    hm = min(ant_height, ue_height)
-    #find largest value
-    hb = max(ant_height, ue_height)
+            if d2d <= 5000:
+                pl_apostrophe_uma_nlos = round(
+                    13.54 + 39.08 * np.log10(d3d) + 20 *
+                    np.log10(fc) - 0.6 * (hut - 1.5) +
+                    generate_log_normal_dist_value(fc, 1, 6, iterations, seed_value)
+                )
 
-    alpha_hm = (1.1*np.log10(frequency) - 0.7) * min(10, hm) - \
-        (1.56*np.log10(frequency) - 0.8) + max(0, (20*np.log10(hm/10)))
+            if d2d > 5000:
+                pl_apostrophe_uma_nlos = uma_nlos_optional(frequency, distance, ant_height,
+                    ue_height, seed_value, iterations)
 
-    beta_hb = min(0, (20*np.log10(hb/30)))
+            pl_uma_nlos = max(pl_apostrophe_uma_nlos, pl_uma_los)
 
-    if distance <= 20: #units : km
-
-        alpha_exponent = 1
-
-    elif 20 < distance < 100: #units : km
-
-        alpha_exponent = 1 + (0.14 + 1.87e-4 * frequency + \
-            1.07e-3 * hb)*(np.log10(distance/20))**0.8
+            return pl_uma_nlos
 
     else:
-        raise ValueError('Distance over 100km not compliant')
+        # return uma_nlos_optional(frequency, distance, ant_height, ue_height,
+        #     seed_value, iterations)
+        raise ValueError('Did not recognise settlement_type')
 
-    ###PART 1####
-    #Determine initial path loss according to distance, frequency
-    # and environment.
-    if distance < 0.04:
-
-        path_loss = (
-            32.4 + (20*np.log10(frequency)) + (10*np.log10((distance**2) +
-            ((hb - hm)**2) / (10**6)))
-        )
-
-    elif distance >= 0.1:
-
-        if 30 < frequency <= 150:
-
-            path_loss = (
-                69.6 + 26.2*np.log10(150) - 20*np.log10(150/frequency) -
-                13.82*np.log10(max(30, hb)) +
-                (44.9 - 6.55*np.log10(max(30, hb))) *
-                np.log10(distance)**alpha_exponent - alpha_hm - beta_hb
-            )
-
-        elif 150 < frequency <= 1500:
-
-            path_loss = (
-                69.6 + 26.2*np.log10(frequency) -
-                13.82*np.log10(max(30, hb)) +
-                (44.9 - 6.55*np.log10(max(30, hb))) *
-                ((np.log10(distance))**alpha_exponent) - alpha_hm - beta_hb
-            )
-
-        elif 1500 < frequency <= 2000:
-
-            path_loss = (
-                46.3 + 33.9*np.log10(frequency) -
-                13.82*np.log10(max(30, hb)) +
-                (44.9 - 6.55*np.log10(max(30, hb))) *
-                (np.log10(distance))**alpha_exponent - alpha_hm - beta_hb
-            )
-
-        elif 2000 < frequency <= 4000:
-
-            path_loss = (
-                46.3 + 33.9*np.log10(2000) +
-                10*np.log10(frequency/2000) -
-                13.82*np.log10(max(30, hb)) +
-                (44.9 - 6.55*np.log10(max(30, hb))) *
-                (np.log10(distance))**alpha_exponent - alpha_hm - beta_hb
-            )
-
-        else:
-            raise ValueError('Carrier frequency incorrect for Extended Hata')
-
-        if settlement_type == 'suburban':
-
-            path_loss = (
-                path_loss - 2 * \
-                (np.log10((min(max(150, frequency), 2000)/28)))**2 - 5.4
-            )
-
-        elif settlement_type == 'rural': #also called 'open area'
-
-            path_loss = (
-                path_loss - 4.78 * \
-                (np.log10(min(max(150, frequency), 2000)))**2 + 18.33 * \
-                    np.log10(min(max(150, frequency), 2000)) - 40.94
-            )
-
-        else:
-            pass
-
-    elif 0.04 <= distance < 0.1:
-
-        #distance pre-set at 0.1
-        l_fixed_distance_upper = (
-            32.4 + (20*np.log10(frequency)) + (10*np.log10(0.1**2 +
-            (hb - hm)**2 / 10**6))
-        )
-
-        #distance pre-set at 0.04
-        l_fixed_distance_lower = (
-            32.4 + (20*np.log10(frequency)) + (10*np.log10(0.04**2 +
-            (hb - hm)**2 / 10**6))
-        )
-
-        path_loss = (l_fixed_distance_lower +
-            (np.log10(distance) - np.log10(0.04)) / \
-            (np.log10(0.1) - np.log10(0.04)) *
-            (l_fixed_distance_upper - l_fixed_distance_lower)
-        )
-
-    else:
-
-        raise ValueError('Distance over 100km not compliant')
-
-    ###PART 2####
-    #determine variation in path loss using stochastic component
-    if distance <= 0.04:
-
-        path_loss = path_loss + generate_log_normal_dist_value(
-            frequency, 1, 3.5, iterations, seed_value
-        )
-
-    elif 0.04 < distance <= 0.1:
-
-        if above_roof == 1:
-
-            sigma = (3.5 + ((12-3.5)/0.1-0.04) * (distance - 0.04))
-            random_quantity = generate_log_normal_dist_value(
-                frequency, 1, sigma, iterations, seed_value
-            )
-
-            path_loss = (
-                path_loss + random_quantity
-            )
-
-        elif above_roof == 0:
-
-            sigma = (3.5 + ((17-3.5)/0.1-0.04) * (distance - 0.04))
-            random_quantity = generate_log_normal_dist_value(
-                frequency, 1, sigma, iterations, seed_value
-            )
-
-            path_loss = (
-                path_loss + random_quantity
-            )
-
-        else:
-            raise ValueError(
-                'Could not determine if transmitter is above or below roof line'
-            )
-
-    elif 0.1 < distance <= 0.2:
-
-        if above_roof == 1:
-
-            random_quantity = generate_log_normal_dist_value(
-                frequency, 1, 12, iterations, seed_value
-            )
-
-            path_loss = (
-                path_loss + random_quantity
-            )
-
-        elif above_roof == 0:
-
-            random_quantity = generate_log_normal_dist_value(
-                frequency, 1, 17, iterations, seed_value
-            )
-
-            path_loss = (
-                path_loss + random_quantity
-            )
-
-        else:
-            raise ValueError(
-                'Could not determine if transmitter is above or below roof line'
-            )
-
-    elif 0.2 < distance <= 0.6:
-
-        if above_roof == 1:
-
-            sigma = (12 + ((9-12)/0.6-0.2) * (distance - 0.02))
-
-            random_quantity = generate_log_normal_dist_value(
-                frequency, 1, sigma, iterations, seed_value
-            )
-
-            path_loss = (
-                path_loss + random_quantity
-            )
-
-        elif above_roof == 0:
-
-            sigma = (17 + (9-17) / (0.6-0.2) * (distance - 0.02))
-
-            random_quantity = generate_log_normal_dist_value(
-                frequency, 1, sigma, iterations, seed_value
-            )
-
-            path_loss = (
-                path_loss + random_quantity
-            )
-
-        else:
-            raise ValueError(
-                'Could not determine if transmitter is above or below roof line'
-            )
-
-    elif 0.6 < distance:
-
-        random_quantity = generate_log_normal_dist_value(
-            frequency, 1, 12, iterations, seed_value
-        )
-
-        path_loss = (
-            path_loss + random_quantity
-        )
-
-    return round(path_loss, 2)
+    return print('complete')
 
 
 def uma_nlos_optional(frequency, distance, ant_height, ue_height,
@@ -441,7 +221,7 @@ def uma_nlos_optional(frequency, distance, ant_height, ue_height,
     Parameters
     ----------
     frequency : int
-        Carrier band (f) required in MHz.
+        Carrier band (f) required in GHz.
     distance : int
         Distance (d) between transmitter and receiver (km).
     ant_height : int
@@ -461,15 +241,51 @@ def uma_nlos_optional(frequency, distance, ant_height, ue_height,
         Path loss in decibels (dB)
 
     """
-    distance_3d = sqrt((distance)**2 + (ant_height - ue_height)**2)
+    fc = frequency
+    d3d = sqrt((distance)**2 + (ant_height - ue_height)**2)
 
-    path_loss = 32.4 + 20*np.log10(frequency) + 30*np.log10(distance_3d)
+    path_loss = 32.4 + 20*np.log10(fc) + 30*np.log10(d3d)
 
     random_variation = generate_log_normal_dist_value(
         frequency, 1, 7.8, iterations, seed_value
     )
 
-    return round(path_loss + random_variation, 2)
+    return round(path_loss + random_variation)
+
+
+def check_3gpp_applicability(building_height, street_width, ant_height, ue_height):
+
+    if 5 <= building_height < 50 :
+        building_height_compliant = True
+    else:
+        building_height_compliant = False
+        print('building_height not compliant')
+
+    if 5 <= street_width < 50:
+        street_width_compliant = True
+    else:
+        street_width_compliant = False
+        print('Street_width not compliant')
+
+    if 10 <= ant_height < 150:
+        ant_height_compliant = True
+    else:
+        ant_height_compliant = False
+        print('ant_height not compliant')
+
+    if 1 <= ue_height < 10:
+        ue_height_compliant = True
+    else:
+        ue_height_compliant = False
+        print('ue_height not compliant')
+
+    if (building_height_compliant + street_width_compliant +
+        ant_height_compliant + ue_height_compliant) == 4:
+        overall_compliant = True
+    else:
+        overall_compliant = False
+
+    return overall_compliant
 
 
 def generate_log_normal_dist_value(frequency, mu, sigma, draws, seed_value):
