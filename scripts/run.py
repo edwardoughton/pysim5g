@@ -665,9 +665,8 @@ def write_cost_lookup_table(results, environment, site_radius,
                 'civil_material_costs_km2',
                 'civil_transportation_costs_km2',
                 'civil_installation_costs_km2',
-                'power_battery_system_costs_km2',
+                'power_system_costs_km2',
                 'backhaul_fiber_backhaul_costs_km2',
-                'backhaul_microwave_backhaul_1m_costs_km2',
             )
         )
     else:
@@ -694,9 +693,8 @@ def write_cost_lookup_table(results, environment, site_radius,
                 result['civil_material_costs_km2'],
                 result['transportation_costs_km2'],
                 result['installation_costs_km2'],
-                result['battery_system_costs_km2'],
+                result['power_system_costs_km2'],
                 result['fiber_backhaul_costs_km2'],
-                result['microwave_backhaul_1m_costs_km2'],
             )
         )
 
@@ -887,34 +885,29 @@ if __name__ == '__main__':
         'rx_losses': 4,
         'rx_misc_losses': 4,
         'rx_height': 1.5,
-        'building_height': 20,
+        'building_height': 5,
         'street_width': 20,
         'above_roof': 0,
         'network_load': 50,
         'percentile': 50,
         'sectorization': 3,
         'overbooking_factor': 50,
-        'backhaul_distance_km_urban': 1,
-        'backhaul_distance_km_suburban': 2,
-        'backhaul_distance_km_rural': 3,
-        'number_of_mnos_sharing': 2,
+        'mnos': 2,
     }
 
     COSTS = {
         #all costs in $USD
-        'single_sector_antenna_2x2_mimo_dual_band': 1500,
+        'single_sector_antenna': 1500,
         'single_remote_radio_unit': 4000,
         'single_baseband_unit': 10000,
-        'router': 2000,
-        'site_rental': 5000,
         'tower': 10000,
         'civil_materials': 5000,
         'transportation': 10000,
         'installation': 5000,
-        'battery_system': 8000,
-        'fixed_fiber_backhaul_per_km':15000,
-        'microwave_backhaul_1m': 4000,
-        'microwave_backhaul_2m': 8000,
+        'site_rental': 15000,
+        'power_generator_battery_system': 5000,
+        'high_speed_backhaul_hub': 15000,
+        'router': 2000,
     }
 
     SPECTRUM_PORTFOLIO = [
