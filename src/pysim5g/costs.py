@@ -72,7 +72,6 @@ def calculate_costs(data, costs, simulation_parameters, site_radius, environment
                 'sector_antenna_costs_km2': cost_breakdown['single_sector_antenna'],
                 'remote_radio_unit_costs_km2': cost_breakdown['single_remote_radio_unit'],
                 'baseband_unit_costs_km2': cost_breakdown['single_baseband_unit'],
-                'router_costs_km2': cost_breakdown['router'],
                 'site_rental_km2': cost_breakdown['site_rental'],
                 'tower_costs_km2': cost_breakdown['tower'],
                 'civil_material_costs_km2': cost_breakdown['civil_materials'],
@@ -80,6 +79,7 @@ def calculate_costs(data, costs, simulation_parameters, site_radius, environment
                 'installation_costs_km2': cost_breakdown['installation'],
                 'power_system_costs_km2': cost_breakdown['power_generator_battery_system'],
                 'fiber_backhaul_costs_km2': cost_breakdown['high_speed_backhaul_hub'],
+                'router_costs_km2': cost_breakdown['router'],
             }
         )
 
