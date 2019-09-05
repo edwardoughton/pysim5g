@@ -302,9 +302,10 @@ def setup_modulation_coding_lut():
 @pytest.fixture
 def setup_simulation_parameters():
     return  {
-        'iterations': 50, #make sure this is set to 50 for exact test result
+        'iterations': 100,
         'seed_value1': 1,
         'seed_value2': 2,
+        'indoor_users_percentage': 50,
         'los_breakpoint_m': 250,
         'tx_baseline_height': 30,
         'tx_upper_height': 40,
@@ -315,16 +316,14 @@ def setup_simulation_parameters():
         'rx_losses': 4,
         'rx_misc_losses': 4,
         'rx_height': 1.5,
-        'building_height': 20,
+        'building_height': 5,
         'street_width': 20,
         'above_roof': 0,
         'network_load': 50,
-        'percentile': 10,
+        'percentile': 50,
         'sectorization': 3,
         'overbooking_factor': 50,
-        'backhaul_distance_km_urban': 1,
-        'backhaul_distance_km_suburban': 2,
-        'backhaul_distance_km_rural': 10,
+        'mnos': 2,
     }
 
 
@@ -388,18 +387,18 @@ def setup_data():
 @pytest.fixture
 def setup_costs():
     return {
-        'single_sector_antenna_2x2_mimo_dual_band': 1500,
+        #all costs in $USD
+        'single_sector_antenna': 1500,
         'single_remote_radio_unit': 4000,
         'single_baseband_unit': 10000,
-        'router': 2000,
         'tower': 10000,
         'civil_materials': 5000,
         'transportation': 10000,
         'installation': 5000,
-        'battery_system': 8000,
-        'fixed_fiber_backhaul_per_km':15000,
-        'microwave_backhaul_1m': 4000,
-        'microwave_backhaul_2m': 8000,
+        'site_rental': 15000,
+        'power_generator_battery_system': 5000,
+        'high_speed_backhaul_hub': 15000,
+        'router': 2000,
     }
 
 
