@@ -873,7 +873,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
 if __name__ == '__main__':
 
     SIMULATION_PARAMETERS = {
-        'iterations': 10,
+        'iterations': 20,
         'seed_value1': 1,
         'seed_value2': 2,
         'indoor_users_percentage': 50,
