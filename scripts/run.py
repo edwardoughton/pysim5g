@@ -660,13 +660,14 @@ def write_cost_lookup_table(results, environment, site_radius,
                 'ran_sector_antenna_costs_km2',
                 'ran_remote_radio_unit_costs_km2',
                 'ran_baseband_unit_costs_km2',
-                'ran_router_costs_km2',
+                'site_rental_km2',
                 'civil_tower_costs_km2',
                 'civil_material_costs_km2',
                 'civil_transportation_costs_km2',
                 'civil_installation_costs_km2',
                 'power_system_costs_km2',
                 'backhaul_fiber_backhaul_costs_km2',
+                'backhaul_router_costs_km2',
             )
         )
     else:
@@ -688,13 +689,14 @@ def write_cost_lookup_table(results, environment, site_radius,
                 result['sector_antenna_costs_km2'],
                 result['remote_radio_unit_costs_km2'],
                 result['baseband_unit_costs_km2'],
-                result['router_costs_km2'],
+                result['site_rental_km2'],
                 result['tower_costs_km2'],
                 result['civil_material_costs_km2'],
                 result['transportation_costs_km2'],
                 result['installation_costs_km2'],
                 result['power_system_costs_km2'],
                 result['fiber_backhaul_costs_km2'],
+                result['router_costs_km2'],
             )
         )
 
@@ -871,7 +873,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
 if __name__ == '__main__':
 
     SIMULATION_PARAMETERS = {
-        'iterations': 100,
+        'iterations': 20,
         'seed_value1': 1,
         'seed_value2': 2,
         'indoor_users_percentage': 50,
@@ -916,6 +918,7 @@ if __name__ == '__main__':
         (1.8, 10, '4G'),
         (2.6, 10, '4G'),
         (3.5, 40, '5G'),
+        (26, 100, '5G'),
     ]
 
     ANT_HEIGHT = [
@@ -964,7 +967,7 @@ if __name__ == '__main__':
         for n in range(min, max, increment):
             yield n
 
-    INCREMENT = (200, 1000, 500)
+    INCREMENT = (200, 10000, 200)
 
     SITE_RADII = {
         'urban':
