@@ -2,9 +2,6 @@ import pytest
 from pysim5g.path_loss import (
     path_loss_calculator,
     etsi_tr_138_901,
-    # determine_path_loss,
-    # free_space,
-    # extended_hata,
     uma_nlos_optional,
     check_3gpp_applicability,
     )
@@ -80,6 +77,7 @@ def test_path_loss_calculator_errors():
     (0.7,5000,35,'macro',5,20,'urban','nlos',1.5,0,1,42,1,(round(155+2), 'etsi_tr_138_901')),
     ])
 
+
 def test_path_loss_calculator(frequency, distance, ant_height, ant_type,
     building_height,street_width, settlement_type, type_of_sight, ue_height,
     above_roof, indoor, seed_value, iterations, expected):
@@ -89,23 +87,6 @@ def test_path_loss_calculator(frequency, distance, ant_height, ant_type,
         building_height, street_width, settlement_type, type_of_sight,
         ue_height, above_roof, indoor, seed_value, iterations)
         ) == expected
-
-
-# #Prepare for testing determine_path_loss
-# @pytest.mark.parametrize("free_space_path_loss, extended_hata_path_loss, \
-#     expected", [
-#     (200, 100, (200, 'free_space_path_loss')),
-#     (100, 200, (200, 'extended_hata_path_loss')),
-#     ])
-
-
-# def test_determine_path_loss(free_space_path_loss,extended_hata_path_loss,
-#     expected):
-
-#     assert (
-#         determine_path_loss(free_space_path_loss, extended_hata_path_loss)
-#         ) == expected
-#
 
 
 #Prepare for testing 3GPP compatability function
@@ -118,6 +99,7 @@ def test_path_loss_calculator(frequency, distance, ant_height, ant_type,
     (20, 20, 20, 1.5, True),
     (5, 20, 8, 1.5, False),
     ])
+
 
 def test_check_applicability(building_height, street_width, ant_height,
     ue_height, expected):
