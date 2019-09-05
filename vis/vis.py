@@ -152,7 +152,7 @@ def plotting_function2(data):
     return print('completed (urban-rural) replot (isd)')
 
 
-def load_summary_lut():
+def load_summary_lut(max_isd_distance):
 
     filename = os.path.join(DATA, 'percentile_50_capacity_lut.csv')
 
@@ -186,8 +186,8 @@ def load_summary_lut():
 
     output = output.reset_index().reset_index(drop=True)
 
-    # ISD = output.inter_site_distance_km.astype(int) < max_isd_distance
-    # output = output[ISD]
+    ISD = output.inter_site_distance_km.astype(int) < max_isd_distance
+    output = output[ISD]
 
     return output
 
@@ -259,12 +259,14 @@ def generate_long_data(data, x_axis_metric_lower, x_axis_metric_final):
 
     return output
 
-
 def plotting_function3(data):
 
     data = generate_long_data(data, 'inter_site_distance_km', 'ISD')
 
     data['ISD'] = round(data['ISD'], 3)
+
+    bins = [0, 1, 2, 3, 4, 5]
+    data['ISD_binned'] = pd.cut(data['ISD'], bins, labels=["1", "2", "3", "4", "5"])
 
     bins = [100, 200, 300]
     data['Capacity'] = pd.cut(data['Capacity'], bins)
@@ -278,11 +280,11 @@ def plotting_function3(data):
     #     # height=6,
     #     data=data)
 
-    plot = sns.catplot(x='ISD', y='Cost',
+    plot = sns.catplot(x='ISD_binned', y='Cost',
         hue="Metric",
         # size="Capacity",
         col="Strategy", col_wrap=2,
-        # order='Value',
+        # hue_order=['RAN','Site','Civil Works', 'Power', 'Backhaul'],
         kind='bar',
         data=data,
         palette=sns.color_palette("husl", 10),
@@ -297,12 +299,10 @@ def plotting_function3(data):
     plot.fig.legend(handles=handles, labels=labels,
         loc='lower center', ncol=6)
 
-    plot.set_xticklabels(rotation=45)
-
-    plot.axes[0].set_ylabel('Cost (USD$k)')
-    plot.axes[1].set_ylabel('Cost (USD$k)')
-    plot.axes[2].set_ylabel('Cost (USD$k)')
-    plot.axes[3].set_ylabel('Cost (USD$k)')
+    plot.axes[0].set_ylabel('Cost (USD$k km^2)')
+    plot.axes[1].set_ylabel('Cost (USD$k km^2)')
+    plot.axes[2].set_ylabel('Cost (USD$k km^2)')
+    plot.axes[3].set_ylabel('Cost (USD$k km^2)')
 
     plot.axes[0].set_xlabel('ISD (km)')
     plot.axes[1].set_xlabel('ISD (km)')
@@ -318,14 +318,14 @@ def plotting_function3(data):
 
 if __name__ == '__main__':
 
-    # data = load_in_all_main_lut()
+    data = load_in_all_main_lut()
 
-    # plotting_function1_isd(data)
+    plotting_function1_isd(data)
 
-    # plotting_function2(data)
+    plotting_function2(data)
 
-    # max_isd_distance = 10
+    max_isd_distance = 10
 
-    data = load_summary_lut()
+    data = load_summary_lut(max_isd_distance)
 
     plotting_function3(data)
