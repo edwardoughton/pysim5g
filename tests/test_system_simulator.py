@@ -22,8 +22,8 @@ def test_estimate_link_budget(base_system, setup_modulation_coding_lut,
 
     for receiver in actual_result:
         if receiver['id'] == 'id_0':
-            assert round(actual_result[0]['path_loss'], 2) == 108.99
-            assert round(actual_result[0]['received_power'], 2) == -57.99
-            assert round(actual_result[0]['sinr'], 2) == 1.87
+            assert round(actual_result[0]['path_loss'], 2) == 111
+            assert round(actual_result[0]['received_power'], 2) == -60
+            assert round(actual_result[0]['sinr'], 2) == 2
             assert round(actual_result[0]['capacity_mbps'], 2) == 14.77
             assert round(actual_result[0]['capacity_mbps_km2'], 2) == 68.2
