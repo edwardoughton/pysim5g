@@ -300,9 +300,9 @@ def setup_modulation_coding_lut():
 
 
 @pytest.fixture
-def setup_simulation_parameters():
+def setup_parameters():
     return  {
-        'iterations': 100,
+        'iterations': 20,
         'seed_value1': 1,
         'seed_value2': 2,
         'indoor_users_percentage': 50,
@@ -324,16 +324,18 @@ def setup_simulation_parameters():
         'sectorization': 3,
         'overbooking_factor': 50,
         'mnos': 2,
+        'asset_lifetime': 10,
+        'discount_rate': 3.5,
+        'opex_percentage_of_capex': 10,
     }
-
 
 
 @pytest.fixture
 def base_system(setup_transmitter, setup_interfering_transmitters,
-        setup_receivers, setup_site_area, setup_simulation_parameters):
+        setup_receivers, setup_site_area, setup_parameters):
 
     system = SimulationManager(setup_transmitter, setup_interfering_transmitters,
-        setup_receivers, setup_site_area, setup_simulation_parameters)
+        setup_receivers, setup_site_area, setup_parameters)
 
     return system
 
