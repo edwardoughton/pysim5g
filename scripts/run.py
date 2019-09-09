@@ -895,21 +895,24 @@ if __name__ == '__main__':
         'sectorization': 3,
         'overbooking_factor': 50,
         'mnos': 2,
+        'asset_lifetime': 10,
+        'discount_rate': 3.5,
+        'opex_percentage_of_capex': 10,
     }
 
     COSTS = {
         #all costs in $USD
-        'single_sector_antenna': 1500,
-        'single_remote_radio_unit': 4000,
-        'single_baseband_unit': 10000,
-        'tower': 10000,
-        'civil_materials': 5000,
-        'transportation': 10000,
-        'installation': 5000,
-        'site_rental': 15000,
-        'power_generator_battery_system': 5000,
-        'high_speed_backhaul_hub': 15000,
-        'router': 2000,
+        'capex_single_sector_antenna': 1500,
+        'capex_single_remote_radio_unit': 4000,
+        'capex_single_baseband_unit': 10000,
+        'capex_tower': 10000,
+        'capex_civil_materials': 5000,
+        'capex_transportation': 10000,
+        'capex_installation': 5000,
+        'opex_site_rental': 15000,
+        'capex_power_generator_battery_system': 5000,
+        'capex_high_speed_backhaul_hub': 15000,
+        'capex_router': 2000,
     }
 
     SPECTRUM_PORTFOLIO = [
