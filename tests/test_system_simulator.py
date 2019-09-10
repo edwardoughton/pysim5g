@@ -13,17 +13,17 @@ def test_simulation_manager(base_system, setup_transmitter, setup_site_area):
 
 
 def test_estimate_link_budget(base_system, setup_modulation_coding_lut,
-    setup_simulation_parameters):
+    setup_parameters):
 
     actual_result = base_system.estimate_link_budget(
         0.7, 10, '5G', 30, 'urban', setup_modulation_coding_lut,
-        setup_simulation_parameters
+        setup_parameters
         )
 
     for receiver in actual_result:
         if receiver['id'] == 'id_0':
-            assert round(actual_result[0]['path_loss'], 2) == 111
-            assert round(actual_result[0]['received_power'], 2) == -60
-            assert round(actual_result[0]['sinr'], 2) == 2
-            assert round(actual_result[0]['capacity_mbps'], 2) == 14.77
-            assert round(actual_result[0]['capacity_mbps_km2'], 2) == 68.2
+            assert round(actual_result[0]['path_loss']) == 110
+            assert round(actual_result[0]['received_power']) == -59
+            assert round(actual_result[0]['sinr']) == 3
+            assert round(actual_result[0]['capacity_mbps']) == 19
+            assert round(actual_result[0]['capacity_mbps_km2']) == 88
