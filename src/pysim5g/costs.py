@@ -34,9 +34,9 @@ def calculate_costs(data, costs, parameters, site_radius, environment):
 
     sharing_strategies = [
         'baseline',
-        # 'passive_site_sharing',
-        # 'passive_backhaul_sharing',
-        # 'active_moran',
+        'passive_site_sharing',
+        'passive_backhaul_sharing',
+        'active_moran',
     ]
 
     output = []
@@ -49,8 +49,6 @@ def calculate_costs(data, costs, parameters, site_radius, environment):
         total_deployment_costs_km2 = 0
         for key, value in cost_breakdown.items():
             total_deployment_costs_km2 += value
-
-        # dicounted_costs = discount_cost(cost_breakdown, parameters)
 
         output.append(
             {
@@ -158,15 +156,15 @@ def passive_site_sharing(costs, sites_per_km2, environment, parameters):
     """
     cost_breakdown = {
         'single_sector_antenna': (
-            discount_cost(costs['single_sector_antenna'], parameters) *
+            discount_cost(costs['single_sector_antenna'], parameters, 1) *
             parameters['sectorization'] * sites_per_km2
         ),
         'single_remote_radio_unit': (
-            discount_cost(costs['single_remote_radio_unit'], parameters) *
+            discount_cost(costs['single_remote_radio_unit'], parameters, 1) *
             parameters['sectorization'] * sites_per_km2
         ),
         'single_baseband_unit': (
-            discount_cost(costs['single_baseband_unit'], parameters) *
+            discount_cost(costs['single_baseband_unit'], parameters, 1) *
             sites_per_km2
         ),
         'tower': (
@@ -182,19 +180,19 @@ def passive_site_sharing(costs, sites_per_km2, environment, parameters):
             costs['installation'] * sites_per_km2 / parameters['mnos']
         ),
         'site_rental': (
-            discount_cost(costs['site_rental'], parameters) *
+            discount_cost(costs['site_rental'], parameters, 0) *
             sites_per_km2 / parameters['mnos']
         ),
         'power_generator_battery_system': (
-            discount_cost(costs['power_generator_battery_system'], parameters) *
+            discount_cost(costs['power_generator_battery_system'], parameters, 1) *
             sites_per_km2 / parameters['mnos']
         ),
         'high_speed_backhaul_hub': (
-            discount_cost(costs['high_speed_backhaul_hub'], parameters) *
+            discount_cost(costs['high_speed_backhaul_hub'], parameters, 1) *
             sites_per_km2
         ),
         'router': (
-            discount_cost(costs['router'], parameters) *
+            discount_cost(costs['router'], parameters, 1) *
             sites_per_km2
         )
     }
@@ -211,15 +209,15 @@ def passive_backhaul_sharing(costs, sites_per_km2, environment, parameters):
     """
     cost_breakdown = {
         'single_sector_antenna': (
-            discount_cost(costs['single_sector_antenna'], parameters) *
+            discount_cost(costs['single_sector_antenna'], parameters, 1) *
             parameters['sectorization'] * sites_per_km2
         ),
         'single_remote_radio_unit': (
-            discount_cost(costs['single_remote_radio_unit'], parameters) *
+            discount_cost(costs['single_remote_radio_unit'], parameters, 1) *
             parameters['sectorization'] * sites_per_km2
         ),
         'single_baseband_unit': (
-            discount_cost(costs['single_baseband_unit'], parameters) *
+            discount_cost(costs['single_baseband_unit'], parameters, 1) *
             sites_per_km2
         ),
         'tower': (
@@ -235,19 +233,19 @@ def passive_backhaul_sharing(costs, sites_per_km2, environment, parameters):
             costs['installation'] * sites_per_km2
         ),
         'site_rental': (
-            discount_cost(costs['site_rental'], parameters) *
+            discount_cost(costs['site_rental'], parameters, 0) *
             sites_per_km2 / parameters['mnos']
         ),
         'power_generator_battery_system': (
-            discount_cost(costs['power_generator_battery_system'], parameters) *
+            discount_cost(costs['power_generator_battery_system'], parameters, 1) *
             sites_per_km2 / parameters['mnos']
         ),
         'high_speed_backhaul_hub': (
-            discount_cost(costs['high_speed_backhaul_hub'], parameters) *
+            discount_cost(costs['high_speed_backhaul_hub'], parameters, 1) *
             sites_per_km2 / parameters['mnos']
         ),
         'router': (
-            discount_cost(costs['router'], parameters) *
+            discount_cost(costs['router'], parameters, 1) *
             sites_per_km2 / parameters['mnos']
         )
     }
@@ -265,17 +263,17 @@ def active_moran(costs, sites_per_km2, environment, parameters):
     """
     cost_breakdown = {
         'single_sector_antenna': (
-            discount_cost(costs['router'], parameters) *
+            discount_cost(costs['single_sector_antenna'], parameters, 1) *
             parameters['sectorization'] * sites_per_km2 /
             parameters['mnos']
         ),
         'single_remote_radio_unit': (
-            discount_cost(costs['router'], parameters) *
+            discount_cost(costs['single_remote_radio_unit'], parameters, 1) *
             parameters['sectorization'] * sites_per_km2 /
             parameters['mnos']
         ),
         'single_baseband_unit': (
-            discount_cost(costs['router'], parameters) *
+            discount_cost(costs['single_baseband_unit'], parameters, 1) *
             sites_per_km2 / parameters['mnos']
         ),
         'tower': (
@@ -295,22 +293,25 @@ def active_moran(costs, sites_per_km2, environment, parameters):
             sites_per_km2 / parameters['mnos']
         ),
         'site_rental': (
-            discount_cost(costs['router'], parameters) *
+            discount_cost(costs['site_rental'], parameters, 0) *
             sites_per_km2 / parameters['mnos']
         ),
         'power_generator_battery_system': (
-            discount_cost(costs['router'], parameters) *
+            discount_cost(costs['power_generator_battery_system'], parameters, 1) *
             sites_per_km2 / parameters['mnos']
         ),
         'high_speed_backhaul_hub': (
-            discount_cost(costs['router'], parameters) *
+            discount_cost(costs['high_speed_backhaul_hub'], parameters, 1) *
             sites_per_km2 / parameters['mnos']
         ),
         'router': (
-            discount_cost(costs['router'], parameters) *
+            discount_cost(costs['router'], parameters, 1) *
             sites_per_km2 / parameters['mnos']
         )
     }
+
+    print(discount_cost(costs['tower'], parameters, 1),
+        sites_per_km2, parameters['mnos'])
 
     return cost_breakdown
 
