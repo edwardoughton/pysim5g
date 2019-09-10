@@ -167,7 +167,7 @@ def load_summary_lut(max_isd_distance):
     output = output[['inter_site_distance_km',
         #'site_area_km2',
         # 'sites_per_km2',
-        'capacity_mbps_km2',
+        # 'capacity_mbps_km2',
         'capacity_mbps_km2_log',#'capacity_mbps',
         'strategy',
         #'environment',
@@ -196,7 +196,7 @@ def generate_long_data(data, x_axis_metric_lower, x_axis_metric_final):
     output = data[[
         x_axis_metric_lower,
         'strategy',
-        'capacity_mbps_km2',
+        'capacity_mbps_km2_log',
         'ran_sector_antenna_costs_km2',
         'ran_remote_radio_unit_costs_km2',
         'ran_baseband_unit_costs_km2',
@@ -211,7 +211,7 @@ def generate_long_data(data, x_axis_metric_lower, x_axis_metric_final):
     ]]
 
     output = pd.melt(output,
-        id_vars=[x_axis_metric_lower, 'strategy', 'capacity_mbps_km2'],
+        id_vars=[x_axis_metric_lower, 'strategy', 'capacity_mbps_km2_log'],
         value_vars=[
             'ran_sector_antenna_costs_km2',
             'ran_remote_radio_unit_costs_km2',
@@ -270,15 +270,6 @@ def plotting_function3(data):
 
     bins = [100, 200, 300]
     data['Capacity'] = pd.cut(data['Capacity'], bins)
-    # print(data.Capacity.unique())
-    # plot = sns.relplot(x="ISD", y="Value", hue="Metric", size="Capacity",
-    #     col="Strategy", col_wrap=2,
-    #     # hue_order=['(200, 300]', '(100, 200]'],
-    #     # sizes=(40, 400),
-    #     # alpha=.5,
-    #     # palette="muted",
-    #     # height=6,
-    #     data=data)
 
     plot = sns.catplot(x='ISD_binned', y='Cost',
         hue="Metric",
@@ -289,7 +280,7 @@ def plotting_function3(data):
         data=data,
         palette=sns.color_palette("husl", 10),
         sharex=False,
-        sharey=False,
+        sharey=True,
         legend="full"
         )
 
