@@ -310,9 +310,6 @@ def active_moran(costs, sites_per_km2, environment, parameters):
         )
     }
 
-    print(discount_cost(costs['tower'], parameters, 1),
-        sites_per_km2, parameters['mnos'])
-
     return cost_breakdown
 
 

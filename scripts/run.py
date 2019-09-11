@@ -873,7 +873,7 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
 if __name__ == '__main__':
 
     SIMULATION_PARAMETERS = {
-        'iterations': 20,
+        'iterations': 5,
         'seed_value1': 1,
         'seed_value2': 2,
         'indoor_users_percentage': 50,
@@ -902,17 +902,17 @@ if __name__ == '__main__':
 
     COSTS = {
         #all costs in $USD
-        'capex_single_sector_antenna': 1500,
-        'capex_single_remote_radio_unit': 4000,
-        'capex_single_baseband_unit': 10000,
-        'capex_tower': 10000,
-        'capex_civil_materials': 5000,
-        'capex_transportation': 10000,
-        'capex_installation': 5000,
-        'opex_site_rental': 15000,
-        'capex_power_generator_battery_system': 5000,
-        'capex_high_speed_backhaul_hub': 15000,
-        'capex_router': 2000,
+        'single_sector_antenna': 1500,
+        'single_remote_radio_unit': 4000,
+        'single_baseband_unit': 10000,
+        'tower': 10000,
+        'civil_materials': 5000,
+        'transportation': 10000,
+        'installation': 5000,
+        'site_rental': 9600,
+        'power_generator_battery_system': 5000,
+        'high_speed_backhaul_hub': 15000,
+        'router': 2000,
     }
 
     SPECTRUM_PORTFOLIO = [
@@ -970,7 +970,7 @@ if __name__ == '__main__':
         for n in range(min, max, increment):
             yield n
 
-    INCREMENT = (200, 10000, 200)
+    INCREMENT = (200, 5800, 200)
 
     SITE_RADII = {
         'urban':
