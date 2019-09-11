@@ -22,7 +22,7 @@ if not os.path.exists(DATA_OUTPUT):
     os.mkdir(DATA_OUTPUT)
 
 
-def load_in_all_main_lut():
+def load_in_all_main_lut(max_isd_distance):
 
     filenames = glob.iglob(os.path.join(DATA, 'full_tables', 'full_capacity*'))
 
@@ -46,12 +46,19 @@ def load_in_all_main_lut():
         }
     )
 
+    output = output.reset_index().reset_index(drop=True)
+
+    ISD = output.inter_site_distance_km.astype(int) < max_isd_distance
+    output = output[ISD]
+
     return output
 
 
 def plotting_function1_isd(data):
 
-    data['capacity_mbps_km2_log'] = np.log(data['capacity_mbps_km2'])
+    data[data['capacity_mbps_km2'] < 0] = 0
+
+    data['capacity_mbps_km2_log'] = np.log(data['capacity_mbps_km2'].replace(0, 0))
 
     data_subset = data[['inter_site_distance_km','frequency_GHz','path_loss_dB',
     'received_power_dB', 'interference_dB', 'sinr_dB', 'spectral_efficiency_bps_hz',
@@ -103,55 +110,6 @@ def plotting_function1_isd(data):
     return print('completed (frequency) barplot (isd)')
 
 
-def plotting_function2(data):
-
-    data_subset = data[['inter_site_distance_km','frequency_GHz','path_loss_dB',
-        'received_power_dB', 'interference_dB', 'sinr_dB', 'spectral_efficiency_bps_hz',
-        'capacity_mbps_km2', 'environment']]
-
-    data_subset.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)', 'Path Loss',
-        'Received Power', 'Interference', 'SINR', 'SE', 'Channel Capacity','Environment']
-
-    long_data = pd.melt(data_subset,
-        id_vars=['Inter-Site Distance (km)', 'Frequency (GHz)', 'Environment'],
-        value_vars=['Path Loss',
-        'Received Power', 'Interference', 'SINR', 'SE', 'Channel Capacity'])
-
-    long_data.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)',
-    'Environment', 'Metric', 'Value']
-
-    plot = sns.relplot(x="Inter-Site Distance (km)", y='Value', hue="Environment",
-        col="Metric", col_wrap=2,
-        kind="line", data=long_data, palette=sns.color_palette("husl", 3),
-        facet_kws=dict(sharex=False, sharey=False), hue_order=["Urban", "Suburban", "Rural"],
-        legend="full")
-
-    handles = plot._legend_data.values()
-    labels = plot._legend_data.keys()
-    plot._legend.remove()
-    plot.fig.legend(handles=handles, labels=labels, loc='lower center', ncol=4)
-
-    plot.axes[0].set_ylabel('Path Loss (dB)')
-    plot.axes[1].set_ylabel('Received Power (dBm)')
-    plot.axes[2].set_ylabel('Interference (dBm)')
-    plot.axes[3].set_ylabel('SINR (dB)')
-    plot.axes[4].set_ylabel('SE (Bps/Hz)')
-    plot.axes[5].set_ylabel('Channel Capacity (Mbps km^2)')
-
-    plot.axes[0].set_xlabel('Inter-Site Distance (km)')
-    plot.axes[1].set_xlabel('Inter-Site Distance (km)')
-    plot.axes[2].set_xlabel('Inter-Site Distance (km)')
-    plot.axes[3].set_xlabel('Inter-Site Distance (km)')
-    plot.axes[4].set_xlabel('Inter-Site Distance (km)')
-    plot.axes[5].set_xlabel('Inter-Site Distance (km)')
-
-    plt.subplots_adjust(hspace=0.3, wspace=0.3, bottom=0.07)
-
-    plot.savefig(DATA_OUTPUT + '/urban_rural_capacity_lineplot.png')
-
-    return print('completed (urban-rural) replot (isd)')
-
-
 def load_summary_lut(max_isd_distance):
 
     filename = os.path.join(DATA, 'percentile_50_capacity_lut.csv')
@@ -165,12 +123,8 @@ def load_summary_lut(max_isd_distance):
     output['capacity_mbps_km2_log'] = np.log(output['capacity_mbps_km2'])
 
     output = output[['inter_site_distance_km',
-        #'site_area_km2',
-        # 'sites_per_km2',
-        # 'capacity_mbps_km2',
-        'capacity_mbps_km2_log',#'capacity_mbps',
+        'capacity_mbps_km2_log',
         'strategy',
-        #'environment',
         'ran_sector_antenna_costs_km2',
         'ran_remote_radio_unit_costs_km2',
         'ran_baseband_unit_costs_km2',
@@ -190,6 +144,7 @@ def load_summary_lut(max_isd_distance):
     output = output[ISD]
 
     return output
+
 
 def generate_long_data(data, x_axis_metric_lower, x_axis_metric_final):
 
@@ -250,16 +205,17 @@ def generate_long_data(data, x_axis_metric_lower, x_axis_metric_final):
         {
             'Strategy':{
                 'baseline': 'Baseline (No Sharing)',
-                'passive_site_sharing': 'Passive (Site Sharing)',
-                'passive_backhaul_sharing': 'Passive (Backhaul Sharing)',
-                'active_moran': 'Active (Multi Operator RAN)',
+                'passive_site_sharing': 'Passive Site Sharing',
+                'passive_backhaul_sharing': 'Passive Backhaul Sharing',
+                'active_moran': 'Multi Operator RAN',
             }
         }
     )
 
     return output
 
-def plotting_function3(data):
+
+def plotting_function2(data):
 
     data = generate_long_data(data, 'inter_site_distance_km', 'ISD')
 
@@ -273,13 +229,11 @@ def plotting_function3(data):
 
     plot = sns.catplot(x='ISD_binned', y='Cost',
         hue="Metric",
-        # size="Capacity",
         col="Strategy", col_wrap=2,
-        # hue_order=['RAN','Site','Civil Works', 'Power', 'Backhaul'],
         kind='bar',
         data=data,
         palette=sns.color_palette("husl", 10),
-        sharex=False,
+        sharex=True,
         sharey=True,
         legend="full"
         )
@@ -300,23 +254,46 @@ def plotting_function3(data):
     plot.axes[2].set_xlabel('ISD (km)')
     plot.axes[3].set_xlabel('ISD (km)')
 
-    plt.subplots_adjust(hspace=0.3, wspace=0.2, bottom=0.12)
+    plt.subplots_adjust(hspace=0.2, wspace=0.1, bottom=0.1)
 
     plot.savefig(DATA_OUTPUT + '/costs_capacity_barplot_isd_density.png')
 
     return print('completed (capacity-cost) replot (isd)')
 
 
+def calculate_strategy_results(data):
+
+    output = data[[
+        'inter_site_distance_km',
+        'strategy',
+        # 'capacity_mbps_km2_log',
+        'ran_sector_antenna_costs_km2',
+        'ran_remote_radio_unit_costs_km2',
+        'ran_baseband_unit_costs_km2',
+        'site_rental_km2',
+        'civil_tower_costs_km2',
+        'civil_material_costs_km2',
+        'civil_transportation_costs_km2',
+        'civil_installation_costs_km2',
+        'power_system_costs_km2',
+        'backhaul_fiber_backhaul_costs_km2',
+        'backhaul_router_costs_km2'
+    ]]
+
+    output.to_csv(os.path.join(DATA_OUTPUT, 'test_data.csv'))
+
+    print('complete')
+
 if __name__ == '__main__':
 
-    data = load_in_all_main_lut()
+    max_isd_distance = 5
+
+    data = load_in_all_main_lut(max_isd_distance)
 
     plotting_function1_isd(data)
 
-    plotting_function2(data)
-
-    max_isd_distance = 10
-
     data = load_summary_lut(max_isd_distance)
 
-    plotting_function3(data)
+    calculate_strategy_results(data)
+
+    plotting_function2(data)
