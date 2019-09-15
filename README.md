@@ -36,9 +36,9 @@ Activate it (run each time you switch projects)::
 
     activate pysim5g
 
-First, install required packages including `fiona`, `shapely`, `numpy`, `rtree` and `pyproj`:
+First, install required packages including `fiona`, `shapely`, `numpy`, `rtree`, `pyproj` and `pytest`:
 
-    conda install fiona shapely numpy rtree pyproj
+    conda install fiona shapely numpy rtree pyproj pytest
 
 For development purposes, run this command once per machine:
 
@@ -52,11 +52,7 @@ To build the documentation:
 
     python setup.py docs
 
-The run the tests first install:
-
-    conda install pytest
-
-Followed by:
+The run the tests:
 
     pytest
 
