@@ -57,7 +57,7 @@ src/smif/sample_project/results/*
 data/*
 results/*
 vis/gdalwmscache/*
-vis/figures/*
+vis/outputs/*
 
 # Other files
 *.ipynb

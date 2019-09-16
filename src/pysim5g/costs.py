@@ -7,7 +7,7 @@ Date: April 2019
 """
 import math
 
-def calculate_costs(data, costs, parameters, site_radius, environment):
+def calculate_costs(datum, costs, parameters, site_radius, environment):
     """
     Calculates the annual total cost using capex and opex.
 
@@ -42,6 +42,7 @@ def calculate_costs(data, costs, parameters, site_radius, environment):
     output = []
 
     for strategy in sharing_strategies:
+
         print('working on {}'.format(strategy))
 
         cost_breakdown = get_costs(strategy, costs, sites_per_km2, environment, parameters)
@@ -50,20 +51,20 @@ def calculate_costs(data, costs, parameters, site_radius, environment):
         for key, value in cost_breakdown.items():
             total_deployment_costs_km2 += value
 
-        output.append(
-            {
+        output.append({
+                'results_type': datum['results_type'],
                 'environment': environment,
                 'inter_site_distance': inter_site_distance,
                 'site_area_km2': site_area_km2,
                 'sites_per_km2': sites_per_km2,
-                'results_type': data['results_type'],
-                'path_loss': data['path_loss'],
-                'received_power': data['received_power'],
-                'interference': data['interference'],
-                'sinr': data['sinr'],
-                'spectral_efficiency': data['spectral_efficiency'],
-                'capacity_mbps': data['capacity_mbps'],
-                'capacity_mbps_km2': data['capacity_mbps'],
+                'results_type': 'percentile_{}'.format(parameters['percentile']),
+                'path_loss': datum['path_loss'],
+                'received_power': datum['received_power'],
+                'interference': datum['interference'],
+                'sinr': datum['sinr'],
+                'spectral_efficiency': datum['spectral_efficiency'],
+                'capacity_mbps': datum['capacity_mbps'],
+                'capacity_mbps_km2': datum['capacity_mbps'],
                 'strategy': strategy,
                 'total_deployment_costs_km2': total_deployment_costs_km2,
                 'sector_antenna_costs_km2': cost_breakdown['single_sector_antenna'],
@@ -77,8 +78,7 @@ def calculate_costs(data, costs, parameters, site_radius, environment):
                 'power_system_costs_km2': cost_breakdown['power_generator_battery_system'],
                 'fiber_backhaul_costs_km2': cost_breakdown['high_speed_backhaul_hub'],
                 'router_costs_km2': cost_breakdown['router'],
-            }
-        )
+            })
 
     return output
 
