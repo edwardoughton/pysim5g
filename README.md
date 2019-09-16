@@ -73,7 +73,7 @@ programme.
 
 Contributors
 ============
-- Edward J. Oughton (University of Oxford)
+- Edward J. Oughton (University of Oxford) (Primary Investigator)
 - Kostas Kotsaros (UK Digital Catapult)
 - Fariborz Entezami (UK Digital Catapult)
 - Dritan Kaleshi (UK Digital Catapult)
