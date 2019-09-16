@@ -556,22 +556,9 @@ def write_cost_lookup_table(results, environment, site_radius,
             (
                 'results_type',
                 'strategy',
-                # 'frequency_GHz',
-                # 'bandwidth_MHz',
-                # 'number_of_sectors',
-                # 'generation',
-                # 'ant_height_m',
-                # 'environment',
                 'inter_site_distance_m',
                 'site_area_km2',
                 'sites_per_km2',
-                # 'path_loss_dB',
-                # 'received_power_dBm',
-                # 'interference_dBm',
-                # 'sinr_dB',
-                # 'spectral_efficiency_bps_hz',
-                # 'capacity_mbps',
-                # 'capacity_mbps_km2',
                 'total_deployment_costs_km2',
                 'ran_sector_antenna_costs_km2',
                 'ran_remote_radio_unit_costs_km2',
@@ -595,22 +582,9 @@ def write_cost_lookup_table(results, environment, site_radius,
             (
                 result['results_type'],
                 result['strategy'],
-                # frequency,
-                # bandwidth,
-                # sectors,
-                # generation,
-                # ant_height,
-                # environment,
                 result['inter_site_distance'],
                 result['site_area_km2'],
                 result['sites_per_km2'],
-                # result['path_loss'],
-                # result['received_power'],
-                # result['interference'],
-                # result['sinr'],
-                # result['spectral_efficiency'],
-                # result['capacity_mbps'],
-                # result['capacity_mbps_km2'] * sectors,
                 result['total_deployment_costs_km2'],
                 result['sector_antenna_costs_km2'],
                 result['remote_radio_unit_costs_km2'],
@@ -635,7 +609,6 @@ def write_shapefile(data, directory, filename, crs):
     Write geojson data to shapefile.
 
     """
-    # Translate props to Fiona sink schema
     prop_schema = []
     for name, value in data[0]['properties'].items():
         fiona_prop_type = next((
@@ -656,7 +629,6 @@ def write_shapefile(data, directory, filename, crs):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    # Write all elements to output file
     with fiona.open(
         os.path.join(directory, filename), 'w',
         driver=sink_driver, crs=sink_crs, schema=sink_schema) as sink:
@@ -756,7 +728,6 @@ def run_simulator(parameters, spectrum_portfolio,
                             parameters
                         )
 
-                    ## write out as shapes, if desired, for debugging purposes
                     geojson_receivers = convert_results_geojson(results)
 
                     write_shapefile(

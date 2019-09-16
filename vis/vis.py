@@ -56,13 +56,9 @@ def load_in_all_main_lut(max_isd_distance):
 
 def plotting_function1_isd(data):
 
-    data[data['capacity_mbps_km2'] < 0] = 0
-
-    data['capacity_mbps_km2_log'] = np.log(data['capacity_mbps_km2'].replace(0, 0))
-
     data_subset = data[['inter_site_distance_km','frequency_GHz','path_loss_dB',
     'received_power_dB', 'interference_dB', 'sinr_dB', 'spectral_efficiency_bps_hz',
-    'capacity_mbps_km2_log']]
+    'capacity_mbps_km2']]
 
     data_subset.columns = ['Inter-Site Distance (km)', 'Frequency (GHz)', 'Path Loss',
         'Received Power', 'Interference', 'SINR', 'SE',
@@ -94,7 +90,7 @@ def plotting_function1_isd(data):
     plot.axes[2].set_ylabel('Interference (dBm)')
     plot.axes[3].set_ylabel('SINR (dB)')
     plot.axes[4].set_ylabel('SE (Bps/Hz)')
-    plot.axes[5].set_ylabel('Logged Capacity (Mbps km^2)')
+    plot.axes[5].set_ylabel('Capacity (Mbps km^2)')
 
     plot.axes[0].set_xlabel('Inter-Site Distance (km)')
     plot.axes[1].set_xlabel('Inter-Site Distance (km)')
@@ -120,12 +116,7 @@ def load_summary_lut(max_isd_distance):
 
     output['inter_site_distance_km'] = output['inter_site_distance_m'] / 1e3
 
-    # output['capacity_mbps_km2_log'] = np.log(output['capacity_mbps_km2'])
-
     output = output[['inter_site_distance_km',
-        # 'capacity_mbps',
-        # 'capacity_mbps_km2',
-        # 'capacity_mbps_km2_log',
         'strategy',
         'ran_sector_antenna_costs_km2',
         'ran_remote_radio_unit_costs_km2',
@@ -156,8 +147,6 @@ def generate_long_data(data):
         'inter_site_distance_km',
         'strategy',
         'results type',
-        # 'capacity_mbps',
-        # 'capacity_mbps_km2_log',
         'ran_sector_antenna_costs_km2',
         'ran_remote_radio_unit_costs_km2',
         'ran_baseband_unit_costs_km2',
@@ -173,15 +162,12 @@ def generate_long_data(data):
 
     subset.columns = [
         'ISD (km)', 'Strategy', 'Results Type',
-        # 'Mean Link Capacity (Mbps)',
-        # 'Area Capacity (logged) (Mbps/km^2)',
         'RAN Antenna', 'RAN RRU', 'RAN BBU',
         'Site Rental', 'Civil Tower', 'Civil Material', 'Civil Transport',
         'Civil Installation', 'Power System', 'Backhaul Fiber', 'Backhaul Router'
     ]
 
     list_of_dicts = subset.to_dict('records')
-    # list_of_dicts = calculate_percentages(list_of_dicts)
 
     intermediate = []
 
@@ -198,7 +184,6 @@ def generate_long_data(data):
                 'Results Type': 'Percentage (%)',
                 'Strategy': item['Strategy'],
                 'ISD (km)': item['ISD (km)'],
-                # 'Area Capacity (logged) (Mbps/km^2)': item['Area Capacity (logged) (Mbps/km^2)'],
                 'RAN Antenna': round(item['RAN Antenna'] / total_cost * 100,2),
                 'RAN RRU': round(item['RAN RRU'] / total_cost * 100, 2),
                 'RAN BBU': round(item['RAN BBU'] / total_cost * 100, 2),
@@ -217,23 +202,18 @@ def generate_long_data(data):
 
     output = pd.melt(all_data,
         id_vars=['ISD (km)', 'Strategy', 'Results Type',
-        # 'Area Capacity (logged) (Mbps/km^2)', 'Mean Link Capacity (Mbps)'
         ],
         value_vars=[
             'RAN Antenna', 'RAN RRU', 'RAN BBU', 'Site Rental', 'Civil Tower',
             'Civil Material', 'Civil Transport', 'Civil Installation', 'Power System',
-            'Backhaul Fiber', 'Backhaul Router', #'Total',
+            'Backhaul Fiber', 'Backhaul Router',
         ])
 
-    output.columns = ['ISD', 'Strategy', 'Results Type',
-        # 'Capacity', 'Link Capacity',
-        'Component', 'gross_value']
+    output.columns = ['ISD', 'Strategy', 'Results Type', 'Component', 'gross_value']
 
     output['Cost'] = round(output['gross_value'] / 1000)
 
-    output = output[['ISD', 'Strategy',
-    # 'Capacity',
-    'Component', 'Cost']]
+    output = output[['ISD', 'Strategy', 'Component', 'Cost']]
 
     output['Metric'] = output['Component'].str.split(" ", n = 1, expand = True)[0]
 
@@ -279,7 +259,6 @@ def calculate_strategy_results(data):
     subset = data[[
         'inter_site_distance_km',
         'strategy',
-        # 'capacity_mbps_km2',
         'ran_sector_antenna_costs_km2',
         'ran_remote_radio_unit_costs_km2',
         'ran_baseband_unit_costs_km2',
@@ -310,7 +289,6 @@ def calculate_strategy_results(data):
 
     intermediate = []
 
-    # area_capacity_km2 = []
     ran_sector_antenna_costs_km2 = []
     ran_remote_radio_unit_costs_km2 = []
     ran_baseband_unit_costs_km2 = []
@@ -337,7 +315,6 @@ def calculate_strategy_results(data):
                             else:
                                 item_total_cost += value
 
-                        # area_capacity_km2.append(item['capacity_mbps_km2'])
                         ran_sector_antenna_costs_km2.append(item['ran_sector_antenna_costs_km2'])
                         ran_remote_radio_unit_costs_km2.append(item['ran_remote_radio_unit_costs_km2'])
                         ran_baseband_unit_costs_km2.append(item['ran_baseband_unit_costs_km2'])
@@ -355,7 +332,6 @@ def calculate_strategy_results(data):
                 'Results Type': 'Raw ($/km2)',
                 'Strategy': strategy,
                 'ISD (km)': (lower + upper) / 2,
-                # 'Area Capacity (Mbps/km^2)': sum(area_capacity_km2) / len(area_capacity_km2),
                 'RAN Antenna': sum(ran_sector_antenna_costs_km2) / len(ran_sector_antenna_costs_km2),
                 'RAN RRU': sum(ran_remote_radio_unit_costs_km2) / len(ran_remote_radio_unit_costs_km2),
                 'RAN BBU': sum(ran_baseband_unit_costs_km2) / len(ran_baseband_unit_costs_km2),
@@ -409,9 +385,6 @@ def plotting_function2(data):
     bins = [0, 1, 2, 3, 4, 5]
     data['ISD_binned'] = pd.cut(data['ISD'], bins, labels=["1", "2", "3", "4", "5"])
 
-    # bins = [100, 200, 300]
-    # data['Capacity'] = pd.cut(data['Capacity'], bins)
-
     plot = sns.catplot(x='ISD_binned', y='Cost',
         hue="Metric",
         col="Strategy", col_wrap=2,
@@ -446,83 +419,6 @@ def plotting_function2(data):
     return print('completed (capacity-cost) replot (isd)')
 
 
-def plotting_function3(data):
-
-    data = pd.DataFrame(data)
-
-    # data['ISD (km)'] = round(data['ISD (km)'], 3)
-
-    # bins = [0, 1, 2, 3, 4, 5]
-    # data['ISD_binned'] = pd.cut(data['ISD (km)'], bins, labels=["1", "2", "3", "4", "5"])
-
-    data = pd.melt(data,
-        id_vars=['ISD (km)', 'Strategy', 'Results Type',
-        # 'Area Capacity (logged) (Mbps/km^2)', 'Mean Link Capacity (Mbps)'
-        ],
-        value_vars=[
-            'RAN Antenna', 'RAN RRU', 'RAN BBU', 'Site Rental', 'Civil Tower',
-            'Civil Material', 'Civil Transport', 'Civil Installation', 'Power System',
-            'Backhaul Fiber', 'Backhaul Router', #'Total',
-        ])
-
-    data.columns = ['ISD (km)', 'Strategy', 'Results Type',
-        # 'Capacity', 'Link Capacity',
-        'Component', 'gross_value']
-
-    data['Cost'] = round(data['gross_value'])# / 1000)
-
-    data = data[['ISD (km)', 'Strategy', 'Results Type',
-    # 'Capacity',
-    'Component', 'Cost']]
-
-    data['Metric'] = data['Component'].str.split(" ", n = 1, expand = True)[0]
-
-    data = data.replace(
-        {
-            'Metric':{
-                'ran': 'RAN',
-                'site': 'Site',
-                'civil': 'Civil works',
-                'power': 'Power',
-                'backhaul': 'Backhaul',
-            }
-        }
-    )
-
-    plot = sns.catplot(x='ISD (km)', y='Cost',
-        hue="Metric",
-        col="Results Type", row='Strategy',
-        kind='bar',
-        data=data,
-        palette=sns.color_palette("husl", 10),
-        sharex=True,
-        sharey=True,
-        legend="full"
-        )
-
-    handles = plot._legend_data.values()
-    labels = plot._legend_data.keys()
-    plot._legend.remove()
-    plot.fig.legend(handles=handles, labels=labels,
-        loc='lower center', ncol=6)
-
-    # plot.axes[0].set_ylabel('Cost (USD$k km^2)')
-    # plot.axes[1].set_ylabel('Cost (USD$k km^2)')
-    # plot.axes[2].set_ylabel('Cost (USD$k km^2)')
-    # plot.axes[3].set_ylabel('Cost (USD$k km^2)')
-
-    # plot.axes[0].set_xlabel('ISD (km)')
-    # plot.axes[1].set_xlabel('ISD (km)')
-    # plot.axes[2].set_xlabel('ISD (km)')
-    # plot.axes[3].set_xlabel('ISD (km)')
-
-    plt.subplots_adjust(hspace=0.2, wspace=0.1, bottom=0.1)
-
-    plot.savefig(DATA_OUTPUT + '/costs_capacity_barplot_isd_density2.png')
-
-    return print('completed (capacity-cost) replot (isd)')
-
-
 def csv_writer(data, directory, filename):
     """
     Write data to a CSV file path
@@ -545,9 +441,9 @@ if __name__ == '__main__':
 
     max_isd_distance = 5
 
-    # data = load_in_all_main_lut(max_isd_distance)
+    data = load_in_all_main_lut(max_isd_distance)
 
-    # plotting_function1_isd(data)
+    plotting_function1_isd(data)
 
     wide_data = load_summary_lut(max_isd_distance)
 
@@ -556,7 +452,5 @@ if __name__ == '__main__':
     plotting_function2(long_data)
 
     mean_results = calculate_strategy_results(wide_data)
-
-    plotting_function3(mean_results)
 
     csv_writer(mean_results, DATA_OUTPUT, 'mean_results.csv')
