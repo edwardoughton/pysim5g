@@ -120,12 +120,12 @@ def load_summary_lut(max_isd_distance):
 
     output['inter_site_distance_km'] = output['inter_site_distance_m'] / 1e3
 
-    output['capacity_mbps_km2_log'] = np.log(output['capacity_mbps_km2'])
+    # output['capacity_mbps_km2_log'] = np.log(output['capacity_mbps_km2'])
 
     output = output[['inter_site_distance_km',
-        'capacity_mbps',
-        'capacity_mbps_km2',
-        'capacity_mbps_km2_log',
+        # 'capacity_mbps',
+        # 'capacity_mbps_km2',
+        # 'capacity_mbps_km2_log',
         'strategy',
         'ran_sector_antenna_costs_km2',
         'ran_remote_radio_unit_costs_km2',
@@ -139,6 +139,8 @@ def load_summary_lut(max_isd_distance):
         'backhaul_fiber_backhaul_costs_km2',
         'backhaul_router_costs_km2'
     ]]
+
+    output['results type'] = 'Raw ($/km2)'
 
     output = output.reset_index().reset_index(drop=True)
 
@@ -148,12 +150,14 @@ def load_summary_lut(max_isd_distance):
     return output
 
 
-def generate_long_data(data, x_axis_metric_lower, x_axis_metric_final):
+def generate_long_data(data):
 
-    output = data[[
-        x_axis_metric_lower,
+    subset = data[[
+        'inter_site_distance_km',
         'strategy',
-        'capacity_mbps_km2_log',
+        'results type',
+        # 'capacity_mbps',
+        # 'capacity_mbps_km2_log',
         'ran_sector_antenna_costs_km2',
         'ran_remote_radio_unit_costs_km2',
         'ran_baseband_unit_costs_km2',
@@ -167,29 +171,71 @@ def generate_long_data(data, x_axis_metric_lower, x_axis_metric_final):
         'backhaul_router_costs_km2'
     ]]
 
-    output = pd.melt(output,
-        id_vars=[x_axis_metric_lower, 'strategy', 'capacity_mbps_km2_log'],
+    subset.columns = [
+        'ISD (km)', 'Strategy', 'Results Type',
+        # 'Mean Link Capacity (Mbps)',
+        # 'Area Capacity (logged) (Mbps/km^2)',
+        'RAN Antenna', 'RAN RRU', 'RAN BBU',
+        'Site Rental', 'Civil Tower', 'Civil Material', 'Civil Transport',
+        'Civil Installation', 'Power System', 'Backhaul Fiber', 'Backhaul Router'
+    ]
+
+    list_of_dicts = subset.to_dict('records')
+    # list_of_dicts = calculate_percentages(list_of_dicts)
+
+    intermediate = []
+
+    for item in list_of_dicts:
+        intermediate.append(item)
+        total_cost = 0
+        for key, value in item.items():
+            if key == 'ISD (km)' or key == 'Strategy' or key == 'Results Type' or key == 'Total':
+                pass
+            else:
+                total_cost += value
+
+        intermediate.append({
+                'Results Type': 'Percentage (%)',
+                'Strategy': item['Strategy'],
+                'ISD (km)': item['ISD (km)'],
+                # 'Area Capacity (logged) (Mbps/km^2)': item['Area Capacity (logged) (Mbps/km^2)'],
+                'RAN Antenna': round(item['RAN Antenna'] / total_cost * 100,2),
+                'RAN RRU': round(item['RAN RRU'] / total_cost * 100, 2),
+                'RAN BBU': round(item['RAN BBU'] / total_cost * 100, 2),
+                'Site Rental': round(item['Site Rental'] / total_cost * 100, 2),
+                'Civil Tower': round(item['Civil Tower'] / total_cost * 100, 2),
+                'Civil Material': round(item['Civil Material'] / total_cost * 100, 2),
+                'Civil Transport': round(item['Civil Transport'] / total_cost * 100, 2),
+                'Civil Installation': round(item['Civil Installation'] / total_cost * 100, 2),
+                'Power System': round(item['Power System'] / total_cost * 100, 2),
+                'Backhaul Fiber': round(item['Backhaul Fiber'] / total_cost * 100, 2),
+                'Backhaul Router': round(item['Backhaul Router'] / total_cost * 100, 2),
+                'Total': 100,
+        })
+
+    all_data = pd.DataFrame(intermediate)
+
+    output = pd.melt(all_data,
+        id_vars=['ISD (km)', 'Strategy', 'Results Type',
+        # 'Area Capacity (logged) (Mbps/km^2)', 'Mean Link Capacity (Mbps)'
+        ],
         value_vars=[
-            'ran_sector_antenna_costs_km2',
-            'ran_remote_radio_unit_costs_km2',
-            'ran_baseband_unit_costs_km2',
-            'site_rental_km2',
-            'civil_tower_costs_km2',
-            'civil_material_costs_km2',
-            'civil_transportation_costs_km2',
-            'civil_installation_costs_km2',
-            'power_system_costs_km2',
-            'backhaul_fiber_backhaul_costs_km2',
-            'backhaul_router_costs_km2'
+            'RAN Antenna', 'RAN RRU', 'RAN BBU', 'Site Rental', 'Civil Tower',
+            'Civil Material', 'Civil Transport', 'Civil Installation', 'Power System',
+            'Backhaul Fiber', 'Backhaul Router', #'Total',
         ])
 
-    output.columns = ['ISD', 'Strategy', 'Capacity', 'Component', 'gross_value']
+    output.columns = ['ISD', 'Strategy', 'Results Type',
+        # 'Capacity', 'Link Capacity',
+        'Component', 'gross_value']
 
     output['Cost'] = round(output['gross_value'] / 1000)
 
-    output = output[['ISD', 'Strategy', 'Capacity', 'Component', 'Cost']]
+    output = output[['ISD', 'Strategy',
+    # 'Capacity',
+    'Component', 'Cost']]
 
-    output['Metric'] = output['Component'].str.split("_", n = 1, expand = True)[0]
+    output['Metric'] = output['Component'].str.split(" ", n = 1, expand = True)[0]
 
     output = output.replace(
         {
@@ -233,6 +279,7 @@ def calculate_strategy_results(data):
     subset = data[[
         'inter_site_distance_km',
         'strategy',
+        # 'capacity_mbps_km2',
         'ran_sector_antenna_costs_km2',
         'ran_remote_radio_unit_costs_km2',
         'ran_baseband_unit_costs_km2',
@@ -263,6 +310,7 @@ def calculate_strategy_results(data):
 
     intermediate = []
 
+    # area_capacity_km2 = []
     ran_sector_antenna_costs_km2 = []
     ran_remote_radio_unit_costs_km2 = []
     ran_baseband_unit_costs_km2 = []
@@ -289,6 +337,7 @@ def calculate_strategy_results(data):
                             else:
                                 item_total_cost += value
 
+                        # area_capacity_km2.append(item['capacity_mbps_km2'])
                         ran_sector_antenna_costs_km2.append(item['ran_sector_antenna_costs_km2'])
                         ran_remote_radio_unit_costs_km2.append(item['ran_remote_radio_unit_costs_km2'])
                         ran_baseband_unit_costs_km2.append(item['ran_baseband_unit_costs_km2'])
@@ -306,6 +355,7 @@ def calculate_strategy_results(data):
                 'Results Type': 'Raw ($/km2)',
                 'Strategy': strategy,
                 'ISD (km)': (lower + upper) / 2,
+                # 'Area Capacity (Mbps/km^2)': sum(area_capacity_km2) / len(area_capacity_km2),
                 'RAN Antenna': sum(ran_sector_antenna_costs_km2) / len(ran_sector_antenna_costs_km2),
                 'RAN RRU': sum(ran_remote_radio_unit_costs_km2) / len(ran_remote_radio_unit_costs_km2),
                 'RAN BBU': sum(ran_baseband_unit_costs_km2) / len(ran_baseband_unit_costs_km2),
@@ -315,7 +365,7 @@ def calculate_strategy_results(data):
                 'Civil Transport': sum(civil_transportation_costs_km2) / len(civil_transportation_costs_km2),
                 'Civil Installation': sum(civil_installation_costs_km2) / len(civil_installation_costs_km2),
                 'Power System': sum(power_system_costs_km2) / len(power_system_costs_km2),
-                'Backhaul Fibre': sum(backhaul_fiber_backhaul_costs_km2) / len(backhaul_fiber_backhaul_costs_km2),
+                'Backhaul Fiber': sum(backhaul_fiber_backhaul_costs_km2) / len(backhaul_fiber_backhaul_costs_km2),
                 'Backhaul Router': sum(backhaul_router_costs_km2) / len(backhaul_router_costs_km2),
                 'Total': sum(total_cost_km2) / len(total_cost_km2),
             })
@@ -330,6 +380,7 @@ def calculate_strategy_results(data):
                 pass
             else:
                 total_cost += value
+
         output.append({
                 'Results Type': 'Percentage (%)',
                 'Strategy': item['Strategy'],
@@ -343,7 +394,7 @@ def calculate_strategy_results(data):
                 'Civil Transport': round(item['Civil Transport'] / total_cost * 100, 2),
                 'Civil Installation': round(item['Civil Installation'] / total_cost * 100, 2),
                 'Power System': round(item['Power System'] / total_cost * 100, 2),
-                'Backhaul Fibre': round(item['Backhaul Fibre'] / total_cost * 100, 2),
+                'Backhaul Fiber': round(item['Backhaul Fiber'] / total_cost * 100, 2),
                 'Backhaul Router': round(item['Backhaul Router'] / total_cost * 100, 2),
                 'Total': 100,
         })
@@ -353,15 +404,13 @@ def calculate_strategy_results(data):
 
 def plotting_function2(data):
 
-    data = generate_long_data(data, 'inter_site_distance_km', 'ISD')
-
     data['ISD'] = round(data['ISD'], 3)
 
     bins = [0, 1, 2, 3, 4, 5]
     data['ISD_binned'] = pd.cut(data['ISD'], bins, labels=["1", "2", "3", "4", "5"])
 
-    bins = [100, 200, 300]
-    data['Capacity'] = pd.cut(data['Capacity'], bins)
+    # bins = [100, 200, 300]
+    # data['Capacity'] = pd.cut(data['Capacity'], bins)
 
     plot = sns.catplot(x='ISD_binned', y='Cost',
         hue="Metric",
@@ -397,6 +446,83 @@ def plotting_function2(data):
     return print('completed (capacity-cost) replot (isd)')
 
 
+def plotting_function3(data):
+
+    data = pd.DataFrame(data)
+
+    # data['ISD (km)'] = round(data['ISD (km)'], 3)
+
+    # bins = [0, 1, 2, 3, 4, 5]
+    # data['ISD_binned'] = pd.cut(data['ISD (km)'], bins, labels=["1", "2", "3", "4", "5"])
+
+    data = pd.melt(data,
+        id_vars=['ISD (km)', 'Strategy', 'Results Type',
+        # 'Area Capacity (logged) (Mbps/km^2)', 'Mean Link Capacity (Mbps)'
+        ],
+        value_vars=[
+            'RAN Antenna', 'RAN RRU', 'RAN BBU', 'Site Rental', 'Civil Tower',
+            'Civil Material', 'Civil Transport', 'Civil Installation', 'Power System',
+            'Backhaul Fiber', 'Backhaul Router', #'Total',
+        ])
+
+    data.columns = ['ISD (km)', 'Strategy', 'Results Type',
+        # 'Capacity', 'Link Capacity',
+        'Component', 'gross_value']
+
+    data['Cost'] = round(data['gross_value'])# / 1000)
+
+    data = data[['ISD (km)', 'Strategy', 'Results Type',
+    # 'Capacity',
+    'Component', 'Cost']]
+
+    data['Metric'] = data['Component'].str.split(" ", n = 1, expand = True)[0]
+
+    data = data.replace(
+        {
+            'Metric':{
+                'ran': 'RAN',
+                'site': 'Site',
+                'civil': 'Civil works',
+                'power': 'Power',
+                'backhaul': 'Backhaul',
+            }
+        }
+    )
+
+    plot = sns.catplot(x='ISD (km)', y='Cost',
+        hue="Metric",
+        col="Results Type", row='Strategy',
+        kind='bar',
+        data=data,
+        palette=sns.color_palette("husl", 10),
+        sharex=True,
+        sharey=True,
+        legend="full"
+        )
+
+    handles = plot._legend_data.values()
+    labels = plot._legend_data.keys()
+    plot._legend.remove()
+    plot.fig.legend(handles=handles, labels=labels,
+        loc='lower center', ncol=6)
+
+    # plot.axes[0].set_ylabel('Cost (USD$k km^2)')
+    # plot.axes[1].set_ylabel('Cost (USD$k km^2)')
+    # plot.axes[2].set_ylabel('Cost (USD$k km^2)')
+    # plot.axes[3].set_ylabel('Cost (USD$k km^2)')
+
+    # plot.axes[0].set_xlabel('ISD (km)')
+    # plot.axes[1].set_xlabel('ISD (km)')
+    # plot.axes[2].set_xlabel('ISD (km)')
+    # plot.axes[3].set_xlabel('ISD (km)')
+
+    plt.subplots_adjust(hspace=0.2, wspace=0.1, bottom=0.1)
+
+    plot.savefig(DATA_OUTPUT + '/costs_capacity_barplot_isd_density2.png')
+
+    return print('completed (capacity-cost) replot (isd)')
+
+
 def csv_writer(data, directory, filename):
     """
     Write data to a CSV file path
@@ -423,10 +549,14 @@ if __name__ == '__main__':
 
     # plotting_function1_isd(data)
 
-    data = load_summary_lut(max_isd_distance)
+    wide_data = load_summary_lut(max_isd_distance)
 
-    plotting_function2(data)
+    long_data = generate_long_data(wide_data)
 
-    mean_results = calculate_strategy_results(data)
+    plotting_function2(long_data)
+
+    mean_results = calculate_strategy_results(wide_data)
+
+    plotting_function3(mean_results)
 
     csv_writer(mean_results, DATA_OUTPUT, 'mean_results.csv')

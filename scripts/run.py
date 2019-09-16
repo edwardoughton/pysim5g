@@ -30,7 +30,7 @@ CONFIG.read(os.path.join(os.path.dirname(__file__), 'script_config.ini'))
 BASE_PATH = CONFIG['file_locations']['base_path']
 
 
-def generate_receivers(site_area, simulation_parameters, grid):
+def generate_receivers(site_area, parameters, grid):
     """
 
     Generate receiver locations as points within the site area.
@@ -43,7 +43,7 @@ def generate_receivers(site_area, simulation_parameters, grid):
     ----------
     site_area : polygon
         Shape of the site area we want to generate receivers within.
-    simulation_parameters : dict
+    parameters : dict
         Contains all necessary simulation parameters.
     grid : int
         Binary indicator to dictate receiver generation type.
@@ -93,10 +93,10 @@ def generate_receivers(site_area, simulation_parameters, grid):
                         },
                         'properties': {
                             'ue_id': "id_{}".format(id_number),
-                            "misc_losses": simulation_parameters['rx_misc_losses'],
-                            "gain": simulation_parameters['rx_gain'],
-                            "losses": simulation_parameters['rx_losses'],
-                            "ue_height": float(simulation_parameters['rx_height']),
+                            "misc_losses": parameters['rx_misc_losses'],
+                            "gain": parameters['rx_gain'],
+                            "losses": parameters['rx_losses'],
+                            "ue_height": float(parameters['rx_height']),
                             "indoor": (True if float(indoor_outdoor_probability) < \
                                 float(0.5) else False),
                         }
@@ -115,7 +115,7 @@ def generate_receivers(site_area, simulation_parameters, grid):
         length = int(path.length)
         increment = int(length / 20)
 
-        indoor = simulation_parameters['indoor_users_percentage'] / 100
+        indoor = parameters['indoor_users_percentage'] / 100
 
         id_number = 0
         for increment_value in range(1, 11):
@@ -126,10 +126,10 @@ def generate_receivers(site_area, simulation_parameters, grid):
                 'geometry': mapping(point),
                 'properties': {
                     'ue_id': "id_{}".format(id_number),
-                    "misc_losses": simulation_parameters['rx_misc_losses'],
-                    "gain": simulation_parameters['rx_gain'],
-                    "losses": simulation_parameters['rx_losses'],
-                    "ue_height": float(simulation_parameters['rx_height']),
+                    "misc_losses": parameters['rx_misc_losses'],
+                    "gain": parameters['rx_gain'],
+                    "losses": parameters['rx_losses'],
+                    "ue_height": float(parameters['rx_height']),
                     "indoor": (True if float(indoor_outdoor_probability) < \
                         float(indoor) else False),
                 }
@@ -139,100 +139,7 @@ def generate_receivers(site_area, simulation_parameters, grid):
     return receivers
 
 
-def obtain_average_values(results, simulation_parameters):
-    """
-
-    Get the average value for each metric.
-
-    Parameters
-    ----------
-    results : list of dicts
-        All data returned from the system simulation.
-    simulation_parameters : dict
-        Contains all necessary simulation parameters.
-
-    Output
-    ------
-    average_site_results : dict
-        Contains the average value for each site metric.
-
-    """
-    path_loss_values = []
-    received_power_values = []
-    interference_values = []
-    sinr_values = []
-    spectral_efficiency_values = []
-    estimated_capacity_values = []
-    estimated_capacity_values_km2 = []
-
-    for result in results:
-
-        path_loss_values.append(result['path_loss'])
-
-        received_power_values.append(result['received_power'])
-
-        interference_values.append(result['interference'])
-
-        sinr = result['sinr']
-        if sinr == None:
-            sinr = 0
-        else:
-            sinr_values.append(sinr)
-
-        spectral_efficiency = result['spectral_efficiency']
-        if spectral_efficiency == None:
-            spectral_efficiency = 0
-        else:
-            spectral_efficiency_values.append(spectral_efficiency)
-
-        estimated_capacity = result['capacity_mbps']
-        if estimated_capacity == None:
-            estimated_capacity = 0
-        else:
-            estimated_capacity_values.append(estimated_capacity)
-
-        estimated_capacity_km2 = result['capacity_mbps_km2']
-        if estimated_capacity_km2 == None:
-            estimated_capacity_km2 = 0
-        else:
-            estimated_capacity_values_km2.append(estimated_capacity_km2)
-
-    average_site_results = {
-        'results_type': 'mean',
-        'path_loss': get_average(path_loss_values),
-        'received_power': get_average(received_power_values),
-        'interference': get_average(interference_values),
-        'sinr': get_average(sinr_values),
-        'spectral_efficiency': get_average(spectral_efficiency_values),
-        'capacity_mbps': get_average(estimated_capacity_values),
-        'capacity_mbps_km2': get_average(estimated_capacity_values_km2),
-    }
-
-    return average_site_results
-
-
-def get_average(data):
-    """
-
-    Simple function to return the average of a list of values.
-
-    Parameters
-    ----------
-    data : list
-        Contains the list of values we want to average.
-
-    Output
-    ------
-    average : float
-        The average value based on the input list of values.
-
-    """
-    average = sum(data) / len(data)
-
-    return average
-
-
-def obtain_percentile_values(results, simulation_parameters):
+def obtain_percentile_values(results, parameters):
     """
 
     Get the threshold value for a metric based on a given percentile.
@@ -241,7 +148,7 @@ def obtain_percentile_values(results, simulation_parameters):
     ----------
     results : list of dicts
         All data returned from the system simulation.
-    simulation_parameters : dict
+    parameters : dict
         Contains all necessary simulation parameters.
 
     Output
@@ -250,7 +157,7 @@ def obtain_percentile_values(results, simulation_parameters):
         Contains the percentile value for each site metric.
 
     """
-    percentile = simulation_parameters['percentile']
+    percentile = parameters['percentile']
 
     path_loss_values = []
     received_power_values = []
@@ -322,7 +229,7 @@ def obtain_percentile_values(results, simulation_parameters):
     return percentile_site_results
 
 
-def obtain_threshold_values_choice(results, simulation_parameters):
+def obtain_threshold_values_choice(results, parameters):
     """
 
     Get the threshold capacity based on a given percentile.
@@ -331,7 +238,7 @@ def obtain_threshold_values_choice(results, simulation_parameters):
     ----------
     results : list of dicts
         All data returned from the system simulation.
-    simulation_parameters : dict
+    parameters : dict
         Contains all necessary simulation parameters.
 
     Output
@@ -342,7 +249,7 @@ def obtain_threshold_values_choice(results, simulation_parameters):
     """
     sinr_values = []
 
-    percentile = simulation_parameters['percentile']
+    percentile = parameters['percentile']
 
     for result in results:
 
@@ -414,7 +321,7 @@ def convert_results_geojson(data):
 
 def write_full_results(data, environment, site_radius, frequency,
     bandwidth, generation, ant_height, directory, filename,
-    simulation_parameters):
+    parameters):
     """
 
     Write full results data to .csv.
@@ -439,11 +346,11 @@ def write_full_results(data, environment, site_radius, frequency,
         Folder the data will be written to.
     filename : string
         Name of the .csv file.
-    simulation_parameters : dict
+    parameters : dict
         Contains all necessary simulation parameters.
 
     """
-    sectors = simulation_parameters['sectorization']
+    sectors = parameters['sectorization']
     inter_site_distance = site_radius * 2
     site_area_km2 = (
         math.sqrt(3) / 2 * inter_site_distance ** 2 / 1e6
@@ -507,9 +414,9 @@ def write_full_results(data, environment, site_radius, frequency,
             ))
 
 
-def write_frequency_lookup_table(results, environment, site_radius,
+def write_frequency_lookup_table(result, environment, site_radius,
     frequency, bandwidth, generation, ant_height,
-    directory, filename, simulation_parameters):
+    directory, filename, parameters):
     """
 
     Write the main, comprehensive lookup table for all environments,
@@ -535,7 +442,7 @@ def write_frequency_lookup_table(results, environment, site_radius,
         Folder the data will be written to.
     filename : string
         Name of the .csv file.
-    simulation_parameters : dict
+    parameters : dict
         Contains all necessary simulation parameters.
 
     """
@@ -543,7 +450,7 @@ def write_frequency_lookup_table(results, environment, site_radius,
     site_area_km2 = math.sqrt(3) / 2 * inter_site_distance ** 2 / 1e6
     sites_per_km2 = 1 / site_area_km2
 
-    sectors = simulation_parameters['sectorization']
+    sectors = parameters['sectorization']
 
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -580,7 +487,7 @@ def write_frequency_lookup_table(results, environment, site_radius,
 
     lut_writer.writerow(
         (
-            results['results_type'],
+            result['results_type'],
             environment,
             inter_site_distance,
             site_area_km2,
@@ -590,23 +497,22 @@ def write_frequency_lookup_table(results, environment, site_radius,
             sectors,
             generation,
             ant_height,
-            results['path_loss'],
-            results['received_power'],
-            results['interference'],
-            results['sinr'],
-            results['spectral_efficiency'],
-            results['capacity_mbps'],
-            results['capacity_mbps_km2'] * sectors,
+            result['path_loss'],
+            result['received_power'],
+            result['interference'],
+            result['sinr'],
+            result['spectral_efficiency'],
+            result['capacity_mbps'],
+            result['capacity_mbps_km2'] * sectors,
         )
     )
 
     lut_file.close()
 
 
-
 def write_cost_lookup_table(results, environment, site_radius,
     frequency, bandwidth, generation, ant_height,
-    directory, filename, simulation_parameters):
+    directory, filename, parameters):
     """
 
     Write the main, comprehensive lookup table for all environments,
@@ -632,11 +538,11 @@ def write_cost_lookup_table(results, environment, site_radius,
         Folder the data will be written to.
     filename : string
         Name of the .csv file.
-    simulation_parameters : dict
+    parameters : dict
         Contains all necessary simulation parameters.
 
     """
-    sectors = simulation_parameters['sectorization']
+    sectors = parameters['sectorization']
 
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -649,13 +555,23 @@ def write_cost_lookup_table(results, environment, site_radius,
         lut_writer.writerow(
             (
                 'results_type',
-                'environment',
+                'strategy',
+                # 'frequency_GHz',
+                # 'bandwidth_MHz',
+                # 'number_of_sectors',
+                # 'generation',
+                # 'ant_height_m',
+                # 'environment',
                 'inter_site_distance_m',
                 'site_area_km2',
                 'sites_per_km2',
-                'capacity_mbps',
-                'capacity_mbps_km2',
-                'strategy',
+                # 'path_loss_dB',
+                # 'received_power_dBm',
+                # 'interference_dBm',
+                # 'sinr_dB',
+                # 'spectral_efficiency_bps_hz',
+                # 'capacity_mbps',
+                # 'capacity_mbps_km2',
                 'total_deployment_costs_km2',
                 'ran_sector_antenna_costs_km2',
                 'ran_remote_radio_unit_costs_km2',
@@ -678,13 +594,23 @@ def write_cost_lookup_table(results, environment, site_radius,
         lut_writer.writerow(
             (
                 result['results_type'],
-                environment,
+                result['strategy'],
+                # frequency,
+                # bandwidth,
+                # sectors,
+                # generation,
+                # ant_height,
+                # environment,
                 result['inter_site_distance'],
                 result['site_area_km2'],
                 result['sites_per_km2'],
-                result['capacity_mbps'],
-                result['capacity_mbps_km2'] * sectors,
-                result['strategy'],
+                # result['path_loss'],
+                # result['received_power'],
+                # result['interference'],
+                # result['sinr'],
+                # result['spectral_efficiency'],
+                # result['capacity_mbps'],
+                # result['capacity_mbps_km2'] * sectors,
                 result['total_deployment_costs_km2'],
                 result['sector_antenna_costs_km2'],
                 result['remote_radio_unit_costs_km2'],
@@ -738,14 +664,13 @@ def write_shapefile(data, directory, filename, crs):
             sink.write(datum)
 
 
-def run_simulator(simulation_parameters, spectrum_portfolio,
+def run_simulator(parameters, spectrum_portfolio,
     ant_heights, site_radii, modulation_and_coding_lut, costs):
     """
 
     Function to run the simulator and all associated modules.
 
     """
-
     unprojected_point = {
         'type': 'Feature',
         'geometry': {
@@ -802,29 +727,24 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
 
                     write_full_results(results, environment, site_radius,
                         frequency, bandwidth, generation, ant_height,
-                        folder, filename, simulation_parameters)
+                        folder, filename, parameters)
 
-                    average_site_results = obtain_average_values(
-                        results, simulation_parameters
-                        )
+                    percentile_site_results = obtain_percentile_values(
+                        results, parameters
+                    )
 
                     results_directory = os.path.join(BASE_PATH, '..', 'results')
-
-                    write_frequency_lookup_table(average_site_results, environment,
+                    write_frequency_lookup_table(percentile_site_results, environment,
                         site_radius, frequency, bandwidth, generation,
                         ant_height, results_directory,
-                        'average_capacity_lut.csv',
-                        simulation_parameters
+                        'capacity_lut_by_frequency_{}.csv'.format(parameters['percentile']),
+                        parameters
                     )
 
                     if frequency == spectrum_portfolio[0][0]:
 
-                        percentile_site_results = obtain_percentile_values(
-                            results, simulation_parameters
-                        )
-
                         percentile_site_results = calculate_costs(
-                            percentile_site_results, costs, simulation_parameters,
+                            percentile_site_results, costs, parameters,
                             site_radius, environment
                         )
 
@@ -832,8 +752,8 @@ def run_simulator(simulation_parameters, spectrum_portfolio,
                             site_radius, frequency, bandwidth, generation,
                             ant_height, results_directory,
                             'percentile_{}_capacity_lut.csv'.format(
-                                simulation_parameters['percentile']),
-                            simulation_parameters
+                                parameters['percentile']),
+                            parameters
                         )
 
                     ## write out as shapes, if desired, for debugging purposes
@@ -970,7 +890,7 @@ if __name__ == '__main__':
         for n in range(min, max, increment):
             yield n
 
-    INCREMENT = (200, 5800, 200)
+    INCREMENT = (400, 5800, 200)
 
     SITE_RADII = {
         'urban':
