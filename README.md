@@ -73,10 +73,10 @@ programme.
 
 Contributors
 ============
-- Edward J. Oughton (Oxford)
-- Kostas Kotsaros (Digital Catapult)
-- Fariborz Entezami (Digital Catapult)
-- Dritan Kaleshi (Digital Catapult)
-- Catarina Fernandes (Digital Catapult)
-- Tom Russell (Oxford)
-- Jon Crowcroft (Cambridge)
+- Edward J. Oughton (University of Oxford)
+- Kostas Kotsaros (UK Digital Catapult)
+- Fariborz Entezami (UK Digital Catapult)
+- Dritan Kaleshi (UK Digital Catapult)
+- Catarina Fernandes (UK Digital Catapult)
+- Tom Russell (University of Oxford)
+- Jon Crowcroft (University of Cambridge)
