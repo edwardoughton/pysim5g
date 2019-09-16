@@ -56,6 +56,14 @@ The run the tests:
 
     pytest
 
+To visualize the results, install `matplotlib`, `pandas` and `seaborn`:
+
+    conda install matplotlib pandas seaborn
+
+And then run:
+
+    python vis/vis.py
+
 Background and funding
 ======================
 
