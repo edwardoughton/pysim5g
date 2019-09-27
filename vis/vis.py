@@ -3,6 +3,7 @@ import configparser
 import sys
 import glob
 import csv
+import pprint
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -101,7 +102,7 @@ def plotting_function1_isd(data):
 
     plt.subplots_adjust(hspace=0.3, wspace=0.3, bottom=0.07)
 
-    plot.savefig(DATA_OUTPUT + '/frequency_capacity_barplot_isd.png')
+    plot.savefig(DATA_OUTPUT + '/frequency_capacity_barplot_isd.png', dpi=300)
 
     return print('completed (frequency) barplot (isd)')
 
@@ -115,6 +116,8 @@ def load_summary_lut(max_isd_distance):
     output['sites_per_km2'] = output.sites_per_km2.round(4)
 
     output['inter_site_distance_km'] = output['inter_site_distance_m'] / 1e3
+
+    output = output.loc[output['environment'] == 'suburban']
 
     output = output[['inter_site_distance_km',
         'strategy',
@@ -175,7 +178,7 @@ def generate_long_data(data):
         intermediate.append(item)
         total_cost = 0
         for key, value in item.items():
-            if key == 'ISD (km)' or key == 'Strategy' or key == 'Results Type' or key == 'Total':
+            if key == 'ISD (km)' or key == 'Strategy' or key == 'Results Type':
                 pass
             else:
                 total_cost += value
@@ -300,20 +303,13 @@ def calculate_strategy_results(data):
     power_system_costs_km2 = []
     backhaul_fiber_backhaul_costs_km2 = []
     backhaul_router_costs_km2 = []
-    total_cost_km2 = []
+    # total_cost_km2 = []
 
     for strategy in strategies:
         for lower, upper in bins:
             for item in subset.to_dict('records'):
                 if item['strategy'] == strategy:
-                    if lower < item['inter_site_distance_km'] < upper:
-
-                        item_total_cost = 0
-                        for key, value in item.items():
-                            if key == 'inter_site_distance_km' or  key == 'strategy':
-                                pass
-                            else:
-                                item_total_cost += value
+                    if lower <= item['inter_site_distance_km'] < upper:
 
                         ran_sector_antenna_costs_km2.append(item['ran_sector_antenna_costs_km2'])
                         ran_remote_radio_unit_costs_km2.append(item['ran_remote_radio_unit_costs_km2'])
@@ -326,7 +322,7 @@ def calculate_strategy_results(data):
                         power_system_costs_km2.append(item['power_system_costs_km2'])
                         backhaul_fiber_backhaul_costs_km2.append(item['backhaul_fiber_backhaul_costs_km2'])
                         backhaul_router_costs_km2.append(item['backhaul_router_costs_km2'])
-                        total_cost_km2.append(item_total_cost)
+
 
             intermediate.append({
                 'Results Type': 'Raw ($/km2)',
@@ -343,7 +339,7 @@ def calculate_strategy_results(data):
                 'Power System': sum(power_system_costs_km2) / len(power_system_costs_km2),
                 'Backhaul Fiber': sum(backhaul_fiber_backhaul_costs_km2) / len(backhaul_fiber_backhaul_costs_km2),
                 'Backhaul Router': sum(backhaul_router_costs_km2) / len(backhaul_router_costs_km2),
-                'Total': sum(total_cost_km2) / len(total_cost_km2),
+                # 'Total': sum(total_cost_km2) / len(total_cost_km2),
             })
 
     output = []
@@ -352,7 +348,7 @@ def calculate_strategy_results(data):
         output.append(item)
         total_cost = 0
         for key, value in item.items():
-            if key == 'ISD (km)' or key == 'Strategy' or key == 'Results Type' or key == 'Total':
+            if key == 'ISD (km)' or key == 'Strategy' or key == 'Results Type':
                 pass
             else:
                 total_cost += value
@@ -372,7 +368,7 @@ def calculate_strategy_results(data):
                 'Power System': round(item['Power System'] / total_cost * 100, 2),
                 'Backhaul Fiber': round(item['Backhaul Fiber'] / total_cost * 100, 2),
                 'Backhaul Router': round(item['Backhaul Router'] / total_cost * 100, 2),
-                'Total': 100,
+                # 'Total': 100,
         })
 
     return output
@@ -414,9 +410,83 @@ def plotting_function2(data):
 
     plt.subplots_adjust(hspace=0.2, wspace=0.1, bottom=0.1)
 
-    plot.savefig(DATA_OUTPUT + '/costs_capacity_barplot_isd_density.png')
+    plot.savefig(DATA_OUTPUT + '/costs_capacity_barplot_isd_density.png', dpi=300)
 
     return print('completed (capacity-cost) replot (isd)')
+
+
+def mean_summarized_cost_results(data):
+
+    unique_isd = set()
+    unique_strategies = set()
+    cost_saving_by_strategy = []
+    summarized_data = []
+
+    for item in data:
+        ran_cost = 0
+        site_rental = 0
+        civils_cost = 0
+        power_cost = 0
+        backhaul_cost = 0
+        total_cost = 0
+
+        for key, value in item.items():
+            if key == 'ISD (km)':
+                unique_isd.add(value)
+            if key == 'Strategy':
+                unique_strategies.add(value)
+            if key == 'ISD (km)' or key == 'Strategy' or key == 'Results Type':
+                pass
+            else:
+                cost_type = key.split(' ')[0]
+
+                total_cost += value
+
+                if cost_type == 'RAN':
+                    ran_cost += value
+                elif cost_type == 'Site':
+                    site_rental += value
+                elif cost_type == 'Civil':
+                    civils_cost += value
+                elif cost_type == 'Power':
+                    power_cost += value
+                elif cost_type == 'Backhaul':
+                    backhaul_cost += value
+
+        if item['Results Type'] == 'Raw ($/km2)':
+            cost_saving_by_strategy.append({
+                'Strategy': item['Strategy'],
+                'ISD (km)': item['ISD (km)'],
+                'total_cost': total_cost,
+            })
+
+        summarized_data.append({
+            'Results Type': item['Results Type'],
+            'Strategy': item['Strategy'],
+            'ISD (km)': item['ISD (km)'],
+            'RAN': ran_cost,
+            'Site Rental': site_rental,
+            'Civil': civils_cost,
+            'Power': power_cost,
+            'Backhaul': backhaul_cost,
+        })
+
+    strategy_savings = []
+    for strategy in list(unique_strategies):
+        for isd in list(unique_isd):
+            for item in cost_saving_by_strategy:
+                if item['Strategy'] == 'Baseline (No Sharing)' and item['ISD (km)'] == isd:
+                    baseline_total_cost = item['total_cost']
+            for item in cost_saving_by_strategy:
+                if not strategy == 'Baseline (No Sharing)' and item['ISD (km)'] == isd:
+                    total_cost = item['total_cost']
+            strategy_savings.append({
+                'Strategy': strategy,
+                'ISD (km)': isd,
+                'Saving (%)': round(total_cost / baseline_total_cost * 100, 1),
+            })
+
+    return summarized_data, strategy_savings
 
 
 def csv_writer(data, directory, filename):
@@ -443,14 +513,22 @@ if __name__ == '__main__':
 
     data = load_in_all_main_lut(max_isd_distance)
 
-    plotting_function1_isd(data)
+    # plotting_function1_isd(data)
 
     wide_data = load_summary_lut(max_isd_distance)
 
-    long_data = generate_long_data(wide_data)
+    # long_data = generate_long_data(wide_data)
 
-    plotting_function2(long_data)
+    # plotting_function2(long_data)
 
     mean_results = calculate_strategy_results(wide_data)
 
-    csv_writer(mean_results, DATA_OUTPUT, 'mean_results.csv')
+    # csv_writer(mean_results, DATA_OUTPUT, 'mean_item_cost_results.csv')
+
+    mean_summarized_results, strategy_savings = mean_summarized_cost_results(mean_results)
+
+    csv_writer(mean_summarized_results, DATA_OUTPUT, 'mean_summarized_cost_results.csv')
+
+    csv_writer(strategy_savings, DATA_OUTPUT, 'mean_strategy_savings.csv')
+
+    # pprint.pprint(strategy_savings)
