@@ -10,9 +10,7 @@ Description
 
 Based on the Monte-Carlo method, the aim is to enable both engineering and economic cost metrics to be assessed in a unified, systematic framework.
 
-Statistical analysis of radio interference enables system-level performance to be assessed for designated 4G and 5G frequency bands (including millimeter wave). 
-
-Geospatially-explicit analytics provide insight into (i) the economics of ultra-dense 5G networks, (ii) 5G spectral efficiency gains and (iii) the capacity and coverage of 4G/5G coexistence.
+The tool includes statistical analysis of radio interference to assess the system-level performance of 4G and 5G frequency band coexistence (including millimeter wave), while simultaneously quantifying the costs of ultra-dense 5G networks.
 
 One example application of this framework includes exploring the techno-economics of 5G infrastructure sharing strategies.
 
