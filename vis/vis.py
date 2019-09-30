@@ -415,80 +415,6 @@ def plotting_function2(data):
     return print('completed (capacity-cost) replot (isd)')
 
 
-def mean_summarized_cost_results(data):
-
-    unique_isd = set()
-    unique_strategies = set()
-    cost_saving_by_strategy = []
-    summarized_data = []
-
-    for item in data:
-        ran_cost = 0
-        site_rental = 0
-        civils_cost = 0
-        power_cost = 0
-        backhaul_cost = 0
-        total_cost = 0
-
-        for key, value in item.items():
-            if key == 'ISD (km)':
-                unique_isd.add(value)
-            if key == 'Strategy':
-                unique_strategies.add(value)
-            if key == 'ISD (km)' or key == 'Strategy' or key == 'Results Type':
-                pass
-            else:
-                cost_type = key.split(' ')[0]
-
-                total_cost += value
-
-                if cost_type == 'RAN':
-                    ran_cost += value
-                elif cost_type == 'Site':
-                    site_rental += value
-                elif cost_type == 'Civil':
-                    civils_cost += value
-                elif cost_type == 'Power':
-                    power_cost += value
-                elif cost_type == 'Backhaul':
-                    backhaul_cost += value
-
-        if item['Results Type'] == 'Raw ($/km2)':
-            cost_saving_by_strategy.append({
-                'Strategy': item['Strategy'],
-                'ISD (km)': item['ISD (km)'],
-                'total_cost': total_cost,
-            })
-
-        summarized_data.append({
-            'Results Type': item['Results Type'],
-            'Strategy': item['Strategy'],
-            'ISD (km)': item['ISD (km)'],
-            'RAN': ran_cost,
-            'Site Rental': site_rental,
-            'Civil': civils_cost,
-            'Power': power_cost,
-            'Backhaul': backhaul_cost,
-        })
-
-    strategy_savings = []
-    for strategy in list(unique_strategies):
-        for isd in list(unique_isd):
-            for item in cost_saving_by_strategy:
-                if item['Strategy'] == 'Baseline (No Sharing)' and item['ISD (km)'] == isd:
-                    baseline_total_cost = item['total_cost']
-            for item in cost_saving_by_strategy:
-                if not strategy == 'Baseline (No Sharing)' and item['ISD (km)'] == isd:
-                    total_cost = item['total_cost']
-            strategy_savings.append({
-                'Strategy': strategy,
-                'ISD (km)': isd,
-                'Saving (%)': round(total_cost / baseline_total_cost * 100, 1),
-            })
-
-    return summarized_data, strategy_savings
-
-
 def csv_writer(data, directory, filename):
     """
     Write data to a CSV file path
@@ -513,22 +439,10 @@ if __name__ == '__main__':
 
     data = load_in_all_main_lut(max_isd_distance)
 
-    # plotting_function1_isd(data)
+    plotting_function1_isd(data)
 
     wide_data = load_summary_lut(max_isd_distance)
 
-    # long_data = generate_long_data(wide_data)
+    long_data = generate_long_data(wide_data)
 
-    # plotting_function2(long_data)
-
-    mean_results = calculate_strategy_results(wide_data)
-
-    # csv_writer(mean_results, DATA_OUTPUT, 'mean_item_cost_results.csv')
-
-    mean_summarized_results, strategy_savings = mean_summarized_cost_results(mean_results)
-
-    csv_writer(mean_summarized_results, DATA_OUTPUT, 'mean_summarized_cost_results.csv')
-
-    csv_writer(strategy_savings, DATA_OUTPUT, 'mean_strategy_savings.csv')
-
-    # pprint.pprint(strategy_savings)
+    plotting_function2(long_data)
