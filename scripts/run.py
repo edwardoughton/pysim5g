@@ -510,9 +510,7 @@ def write_frequency_lookup_table(result, environment, site_radius,
     lut_file.close()
 
 
-def write_cost_lookup_table(results, environment, site_radius,
-    frequency, bandwidth, generation, ant_height,
-    directory, filename, parameters):
+def write_cost_lookup_table(results, directory, filename):
     """
 
     Write the main, comprehensive lookup table for all environments,
@@ -522,28 +520,12 @@ def write_cost_lookup_table(results, environment, site_radius,
     ----------
     results : list of dicts
         Contains all results ready to be written.
-    environment : string
-        Either urban, suburban or rural clutter type.
-    site_radius : int
-        Radius of site area in meters.
-    frequency : float
-        Spectral frequency of carrier band in GHz.
-    bandwidth : int
-        Channel bandwidth of carrier band in MHz.
-    generation : string
-        Either 4G or 5G depending on technology generation.
-    ant_height : int
-        Height of the transmitters modelled in meters.
     directory : string
         Folder the data will be written to.
     filename : string
         Name of the .csv file.
-    parameters : dict
-        Contains all necessary simulation parameters.
 
     """
-    sectors = parameters['sectorization']
-
     if not os.path.exists(directory):
         os.makedirs(directory)
 
@@ -556,6 +538,7 @@ def write_cost_lookup_table(results, environment, site_radius,
             (
                 'results_type',
                 'strategy',
+                'environment',
                 'inter_site_distance_m',
                 'site_area_km2',
                 'sites_per_km2',
@@ -582,6 +565,7 @@ def write_cost_lookup_table(results, environment, site_radius,
             (
                 result['results_type'],
                 result['strategy'],
+                result['environment'],
                 result['inter_site_distance'],
                 result['site_area_km2'],
                 result['sites_per_km2'],
@@ -597,6 +581,241 @@ def write_cost_lookup_table(results, environment, site_radius,
                 result['power_system_costs_km2'],
                 result['fiber_backhaul_costs_km2'],
                 result['router_costs_km2'],
+            )
+        )
+
+    lut_file.close()
+
+
+def write_export_strategy_costs(data_path, directory, filename):
+
+    data = []
+    isd = []
+
+    with open(data_path, 'r') as source:
+        reader = csv.DictReader(source)
+        for result in reader:
+            result = dict(result)
+            data.append({
+                'strategy': result['strategy'],
+                'inter_site_distance': int(result['inter_site_distance_m']),
+                'sector_antenna_costs_km2': float(result['ran_sector_antenna_costs_km2']),
+                'remote_radio_unit_costs_km2': float(result['ran_remote_radio_unit_costs_km2']),
+                'baseband_unit_costs_km2': float(result['ran_baseband_unit_costs_km2']),
+                'site_rental_km2': float(result['site_rental_km2']),
+                'tower_costs_km2': float(result['civil_tower_costs_km2']),
+                'civil_material_costs_km2': float(result['civil_material_costs_km2']),
+                'transportation_costs_km2': float(result['civil_transportation_costs_km2']),
+                'installation_costs_km2': float(result['civil_installation_costs_km2']),
+                'power_system_costs_km2': float(result['power_system_costs_km2']),
+                'fiber_backhaul_costs_km2': float(result['backhaul_fiber_backhaul_costs_km2']),
+                'router_costs_km2': float(result['backhaul_router_costs_km2']),
+                })
+            isd.append(int(result['inter_site_distance_m']))
+
+    bins = [
+        (0.5, 1.5),
+        (1.5, 2.5),
+        (2.5, 3.5),
+        (3.5, 4.5),
+        (4.5, 5.5),
+    ]
+
+    strategies = [
+        'baseline',# 'Baseline (No Sharing)',
+        'passive_site_sharing',# 'Passive Site Sharing',
+        'passive_backhaul_sharing',# 'Passive Backhaul Sharing',
+        'active_moran',# 'Multi Operator RAN',
+    ]
+
+    intermediate = []
+
+    #get the average values across strategies and each bin range
+    for strategy in strategies:
+        for lower, upper in bins:
+
+            ran_sector_antenna_costs_km2 = []
+            ran_remote_radio_unit_costs_km2 = []
+            ran_baseband_unit_costs_km2 = []
+            site_rental_km2 = []
+            civil_tower_costs_km2 = []
+            civil_material_costs_km2 = []
+            civil_transportation_costs_km2 = []
+            civil_installation_costs_km2 = []
+            power_system_costs_km2 = []
+            backhaul_fiber_backhaul_costs_km2 = []
+            backhaul_router_costs_km2 = []
+
+            for item in data:
+                if item['strategy'] == strategy:
+                    if lower <= (int(item['inter_site_distance'])/1e3) < upper:
+                        ran_sector_antenna_costs_km2.append(item['sector_antenna_costs_km2'])
+                        ran_remote_radio_unit_costs_km2.append(item['remote_radio_unit_costs_km2'])
+                        ran_baseband_unit_costs_km2.append(item['baseband_unit_costs_km2'])
+                        site_rental_km2.append(item['site_rental_km2'])
+                        civil_tower_costs_km2.append(item['tower_costs_km2'])
+                        civil_material_costs_km2.append(item['civil_material_costs_km2'])
+                        civil_transportation_costs_km2.append(item['transportation_costs_km2'])
+                        civil_installation_costs_km2.append(item['installation_costs_km2'])
+                        power_system_costs_km2.append(item['power_system_costs_km2'])
+                        backhaul_fiber_backhaul_costs_km2.append(item['fiber_backhaul_costs_km2'])
+                        backhaul_router_costs_km2.append(item['router_costs_km2'])
+
+            if len(ran_sector_antenna_costs_km2) == 0:
+                continue
+
+            intermediate.append({
+                'Results Type': 'Raw ($/km2)',
+                'Strategy': strategy,
+                'ISD (km)': (lower + upper) / 2,
+                'RAN Antenna': sum(ran_sector_antenna_costs_km2) / len(ran_sector_antenna_costs_km2),
+                'RAN RRU': sum(ran_remote_radio_unit_costs_km2) / len(ran_remote_radio_unit_costs_km2),
+                'RAN BBU': sum(ran_baseband_unit_costs_km2) / len(ran_baseband_unit_costs_km2),
+                'Site Rental': sum(site_rental_km2) / len(site_rental_km2),
+                'Civil Tower': sum(civil_tower_costs_km2) / len(civil_tower_costs_km2),
+                'Civil Material': sum(civil_material_costs_km2) / len(civil_material_costs_km2),
+                'Civil Transport': sum(civil_transportation_costs_km2) / len(civil_transportation_costs_km2),
+                'Civil Installation': sum(civil_installation_costs_km2) / len(civil_installation_costs_km2),
+                'Power System': sum(power_system_costs_km2) / len(power_system_costs_km2),
+                'Backhaul Fiber': sum(backhaul_fiber_backhaul_costs_km2) / len(backhaul_fiber_backhaul_costs_km2),
+                'Backhaul Router': sum(backhaul_router_costs_km2) / len(backhaul_router_costs_km2),
+            })
+
+    unique_isd = set()
+    unique_strategies = set()
+    cost_saving_by_strategy = []
+    results = []
+
+    #write results out by individual equipment type
+    for item in intermediate:
+
+        ran_cost = 0
+        site_rental = 0
+        civils_cost = 0
+        power_cost = 0
+        backhaul_cost = 0
+        total_cost = 0
+        for key, value in item.items():
+            if key == 'ISD (km)':
+                unique_isd.add(value)
+            if key == 'Strategy':
+                unique_strategies.add(value)
+            if key == 'ISD (km)' or key == 'Strategy' or key == 'Results Type':
+                pass
+            else:
+                if key.startswith('RAN'):
+                    ran_cost += value
+                if key.startswith('Site'):
+                    site_rental += value
+                if key.startswith('Civil'):
+                    civils_cost += value
+                if key.startswith('Power'):
+                    power_cost += value
+                if key.startswith('Backhaul'):
+                    backhaul_cost += value
+                total_cost += value
+
+        results.append({
+            'Results Type': item['Results Type'],
+            'Strategy': item['Strategy'],
+            'ISD (km)': item['ISD (km)'],
+            'RAN': round(ran_cost),
+            'Site Rental': round(site_rental),
+            'Civil': round(civils_cost),
+            'Power': round(power_cost),
+            'Backhaul': round(backhaul_cost),
+            'Total': round(total_cost),
+        })
+
+        results.append({
+            'Results Type': 'Percentage (%)',
+            'Strategy': item['Strategy'],
+            'ISD (km)': item['ISD (km)'],
+            'RAN': round(ran_cost / total_cost * 100, 2),
+            'Site Rental': round(site_rental / total_cost * 100, 2),
+            'Civil': round(civils_cost / total_cost * 100, 2),
+            'Power': round(power_cost / total_cost * 100, 2),
+            'Backhaul': round(backhaul_cost / total_cost * 100, 2),
+            'Total': 100
+        })
+
+        if item['Results Type'] == 'Raw ($/km2)':
+            cost_saving_by_strategy.append({
+                'Strategy': item['Strategy'],
+                'ISD (km)': item['ISD (km)'],
+                'Total': total_cost,
+            })
+
+    results_to_write = []
+    for strategy in list(unique_strategies):
+        for isd in list(unique_isd):
+            for item in cost_saving_by_strategy:
+                if item['Strategy'] == 'baseline' and item['ISD (km)'] == isd:
+                    baseline_total_cost = item['Total']
+            for item in cost_saving_by_strategy:
+                if item['Strategy'] == strategy and item['ISD (km)'] == isd:
+                    total_cost = item['Total']
+            if strategy == 'baseline':
+                saving = 0
+            else:
+                saving = 100 - round(total_cost / baseline_total_cost * 100, 2)
+
+            for item in results:
+                if item['Strategy'] == strategy and item['ISD (km)'] == isd:
+                    item['Saving on Baseline (%)'] = saving
+                    results_to_write.append(item)
+
+            baseline_total_cost = 0
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    directory = os.path.join(directory, filename)
+
+    if not os.path.exists(directory):
+        lut_file = open(directory, 'w', newline='')
+        lut_writer = csv.writer(lut_file)
+        lut_writer.writerow(
+            (
+                'Results Type',
+                'Strategy',
+                'ISD (km)',
+                'RAN',
+                'Site Rental',
+                'Civils',
+                'Power',
+                'Backhaul',
+                'Total',
+                'Saving (%)',
+            )
+        )
+    else:
+        lut_file = open(directory, 'a', newline='')
+        lut_writer = csv.writer(lut_file)
+
+    for result in results_to_write:
+
+        if result['Strategy'] == 'baseline':
+            strategy = 'Baseline (No Sharing)'
+        elif result['Strategy'] == 'passive_site_sharing':
+            strategy = 'Passive Site Sharing'
+        elif result['Strategy'] == 'passive_backhaul_sharing':
+            strategy = 'Passive Backhaul Sharing'
+        elif result['Strategy'] == 'active_moran':
+            strategy = 'Multi-Operator RAN'
+
+        lut_writer.writerow(
+            (
+                result['Results Type'],
+                strategy,
+                result['ISD (km)'],
+                round(result['RAN'], 2),
+                round(result['Site Rental'], 2),
+                round(result['Civil'], 2),
+                round(result['Power'], 2),
+                round(result['Backhaul'], 2),
+                round(result['Total'], 2),
+                round(result['Saving (%)'], 2),
             )
         )
 
@@ -676,21 +895,21 @@ def run_simulator(parameters, spectrum_portfolio,
                     projected_crs
                     )
 
-            receivers = generate_receivers(site_area, SIMULATION_PARAMETERS, 1)
+            receivers = generate_receivers(site_area, PARAMETERS, 1)
 
             for frequency, bandwidth, generation in spectrum_portfolio:
                 for ant_height in ant_heights:
 
                     MANAGER = SimulationManager(
                         transmitter, interfering_transmitters, receivers,
-                        site_area, SIMULATION_PARAMETERS
+                        site_area, PARAMETERS
                         )
 
                     results = MANAGER.estimate_link_budget(
                         frequency, bandwidth, generation, ant_height,
                         environment,
                         MODULATION_AND_CODING_LUT,
-                        SIMULATION_PARAMETERS
+                        PARAMETERS
                         )
 
                     folder = os.path.join(BASE_PATH, '..', 'results', 'full_tables')
@@ -720,12 +939,9 @@ def run_simulator(parameters, spectrum_portfolio,
                             site_radius, environment
                         )
 
-                        write_cost_lookup_table(percentile_site_results, environment,
-                            site_radius, frequency, bandwidth, generation,
-                            ant_height, results_directory,
+                        write_cost_lookup_table(percentile_site_results, results_directory,
                             'percentile_{}_capacity_lut.csv'.format(
-                                parameters['percentile']),
-                            parameters
+                            parameters['percentile'])
                         )
 
                     geojson_receivers = convert_results_geojson(results)
@@ -760,10 +976,15 @@ def run_simulator(parameters, spectrum_portfolio,
                         projected_crs
                     )
 
+    write_export_strategy_costs(os.path.join(results_directory,
+        'percentile_{}_capacity_lut.csv'.format(PARAMETERS['percentile'])),
+        results_directory,
+        'aggregate_strategy_costs.csv'.format(PARAMETERS['percentile'])
+    )
 
 if __name__ == '__main__':
 
-    SIMULATION_PARAMETERS = {
+    PARAMETERS = {
         'iterations': 5,
         'seed_value1': 1,
         'seed_value2': 2,
@@ -784,7 +1005,7 @@ if __name__ == '__main__':
         'network_load': 50,
         'percentile': 50,
         'sectorization': 3,
-        'overbooking_factor': 50,
+        #'overbooking_factor': 50,
         'mnos': 2,
         'asset_lifetime': 10,
         'discount_rate': 3.5,
@@ -861,7 +1082,7 @@ if __name__ == '__main__':
         for n in range(min, max, increment):
             yield n
 
-    INCREMENT = (400, 5800, 200)
+    INCREMENT = (400, 5400, 400)
 
     SITE_RADII = {
         'urban':
@@ -873,7 +1094,7 @@ if __name__ == '__main__':
         }
 
     run_simulator(
-        SIMULATION_PARAMETERS,
+        PARAMETERS,
         SPECTRUM_PORTFOLIO,
         ANT_HEIGHT,
         SITE_RADII,

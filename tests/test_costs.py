@@ -22,7 +22,7 @@ def test_calculate_costs(setup_data, setup_costs, setup_parameters,
     assert round(baseline_results[0]['civil_material_costs_km2']) == 23094
     assert round(baseline_results[0]['transportation_costs_km2']) == 46188
     assert round(baseline_results[0]['installation_costs_km2']) == 23094
-    assert round(baseline_results[0]['site_rental_km2']) == 596358
+    assert round(baseline_results[0]['site_rental_km2']) == 381669
     assert round(baseline_results[0]['power_system_costs_km2']) == 42973
     assert round(baseline_results[0]['fiber_backhaul_costs_km2']) ==  128918
     assert round(baseline_results[0]['router_costs_km2']) == 17189
@@ -39,7 +39,7 @@ def test_calculate_costs(setup_data, setup_costs, setup_parameters,
     assert round(passive_site_sharing[0]['civil_material_costs_km2']) == 11547
     assert round(passive_site_sharing[0]['transportation_costs_km2']) == 23094
     assert round(passive_site_sharing[0]['installation_costs_km2']) == 11547
-    assert round(passive_site_sharing[0]['site_rental_km2']) == 298179
+    assert round(passive_site_sharing[0]['site_rental_km2']) == 190835
     assert round(passive_site_sharing[0]['power_system_costs_km2']) == 21486
     assert round(passive_site_sharing[0]['fiber_backhaul_costs_km2']) ==  128918
     assert round(passive_site_sharing[0]['router_costs_km2']) == 17189
@@ -56,7 +56,7 @@ def test_calculate_costs(setup_data, setup_costs, setup_parameters,
     assert round(passive_backhaul_sharing[0]['civil_material_costs_km2']) == 23094
     assert round(passive_backhaul_sharing[0]['transportation_costs_km2']) == 46188
     assert round(passive_backhaul_sharing[0]['installation_costs_km2']) == 23094
-    assert round(passive_backhaul_sharing[0]['site_rental_km2']) == 298179
+    assert round(passive_backhaul_sharing[0]['site_rental_km2']) == 190835
     assert round(passive_backhaul_sharing[0]['power_system_costs_km2']) == 21486
     assert round(passive_backhaul_sharing[0]['fiber_backhaul_costs_km2']) ==  64459
     assert round(passive_backhaul_sharing[0]['router_costs_km2']) == 8595
@@ -73,7 +73,7 @@ def test_calculate_costs(setup_data, setup_costs, setup_parameters,
     assert round(active_moran[0]['civil_material_costs_km2']) == 11547
     assert round(active_moran[0]['transportation_costs_km2']) == 23094
     assert round(active_moran[0]['installation_costs_km2']) == 11547
-    assert round(active_moran[0]['site_rental_km2']) == 298179
+    assert round(active_moran[0]['site_rental_km2']) == 190835
     assert round(active_moran[0]['power_system_costs_km2']) == 21486
     assert round(active_moran[0]['fiber_backhaul_costs_km2']) ==  64459
     assert round(active_moran[0]['router_costs_km2']) == 8595

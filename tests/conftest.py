@@ -397,7 +397,7 @@ def setup_costs():
         'civil_materials': 5000,
         'transportation': 10000,
         'installation': 5000,
-        'site_rental': 15000,
+        'site_rental': 9600,
         'power_generator_battery_system': 5000,
         'high_speed_backhaul_hub': 15000,
         'router': 2000,

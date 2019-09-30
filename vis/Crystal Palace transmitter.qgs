@@ -23,7 +23,7 @@
     <layer-tree-layer expanded="1" providerKey="ogr" checked="Qt::Checked" id="site_area_100020190821111016405" source="D:/Github/pysim5g/results/shapes/site_area_1000.shp" name="site_area_1000">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="1" providerKey="gdal" checked="Qt::Checked" id="OpenStreetMap20190821111320542" source="&lt;GDAL_WMS>&#xd;&#xa;  &lt;Service name=&quot;TMS&quot;>&#xd;&#xa;    &lt;ServerUrl>http://tile.openstreetmap.org/${z}/${x}/${y}.png&lt;/ServerUrl>&#xd;&#xa;  &lt;/Service>&#xd;&#xa;  &lt;DataWindow>&#xd;&#xa;    &lt;UpperLeftX>-20037508.34&lt;/UpperLeftX>&#xd;&#xa;    &lt;UpperLeftY>20037508.34&lt;/UpperLeftY>&#xd;&#xa;    &lt;LowerRightX>20037508.34&lt;/LowerRightX>&#xd;&#xa;    &lt;LowerRightY>-20037508.34&lt;/LowerRightY>&#xd;&#xa;    &lt;TileLevel>19&lt;/TileLevel>&#xd;&#xa;    &lt;TileCountX>1&lt;/TileCountX>&#xd;&#xa;    &lt;TileCountY>1&lt;/TileCountY>&#xd;&#xa;    &lt;YOrigin>top&lt;/YOrigin>&#xd;&#xa;  &lt;/DataWindow>&#xd;&#xa;  &lt;Projection>EPSG:3857&lt;/Projection>&#xd;&#xa;  &lt;BlockSizeX>256&lt;/BlockSizeX>&#xd;&#xa;  &lt;BlockSizeY>256&lt;/BlockSizeY>&#xd;&#xa;  &lt;BandsCount>3&lt;/BandsCount>&#xd;&#xa;  &lt;Cache />&#xd;&#xa;&lt;/GDAL_WMS>&#xd;&#xa;" name="OpenStreetMap">
+    <layer-tree-layer expanded="1" providerKey="gdal" checked="Qt::Checked" id="OpenStreetMap20190821111320542" source="&lt;GDAL_WMS>&#xd;&#xd;&#xa;  &lt;Service name=&quot;TMS&quot;>&#xd;&#xd;&#xa;    &lt;ServerUrl>http://tile.openstreetmap.org/${z}/${x}/${y}.png&lt;/ServerUrl>&#xd;&#xd;&#xa;  &lt;/Service>&#xd;&#xd;&#xa;  &lt;DataWindow>&#xd;&#xd;&#xa;    &lt;UpperLeftX>-20037508.34&lt;/UpperLeftX>&#xd;&#xd;&#xa;    &lt;UpperLeftY>20037508.34&lt;/UpperLeftY>&#xd;&#xd;&#xa;    &lt;LowerRightX>20037508.34&lt;/LowerRightX>&#xd;&#xd;&#xa;    &lt;LowerRightY>-20037508.34&lt;/LowerRightY>&#xd;&#xd;&#xa;    &lt;TileLevel>19&lt;/TileLevel>&#xd;&#xd;&#xa;    &lt;TileCountX>1&lt;/TileCountX>&#xd;&#xd;&#xa;    &lt;TileCountY>1&lt;/TileCountY>&#xd;&#xd;&#xa;    &lt;YOrigin>top&lt;/YOrigin>&#xd;&#xd;&#xa;  &lt;/DataWindow>&#xd;&#xd;&#xa;  &lt;Projection>EPSG:3857&lt;/Projection>&#xd;&#xd;&#xa;  &lt;BlockSizeX>256&lt;/BlockSizeX>&#xd;&#xd;&#xa;  &lt;BlockSizeY>256&lt;/BlockSizeY>&#xd;&#xd;&#xa;  &lt;BandsCount>3&lt;/BandsCount>&#xd;&#xd;&#xa;  &lt;Cache />&#xd;&#xd;&#xa;&lt;/GDAL_WMS>&#xd;&#xd;&#xa;" name="OpenStreetMap">
       <customproperties/>
     </layer-tree-layer>
   </layer-tree-group>
@@ -101,7 +101,7 @@
       </filegroup>
     </legendlayer>
   </legend>
-  <Composer title="specific" visible="1">
+  <Composer title="specific" visible="0">
     <Composition resizeToContentsMarginLeft="0" snapping="0" showPages="1" guidesVisible="1" resizeToContentsMarginTop="0" worldFileMap="{d23c7d0a-0ea5-4448-a265-50da4c6bd238}" alignmentSnap="1" printResolution="300" paperWidth="297" gridVisible="0" snapGridOffsetX="0" smartGuides="1" snapGridOffsetY="0" resizeToContentsMarginRight="0" snapTolerancePixels="5" printAsRaster="0" generateWorldFile="0" paperHeight="210" numPages="1" snapGridResolution="10" resizeToContentsMarginBottom="0">
       <symbol alpha="1" clip_to_extent="1" type="fill" name="">
         <layer pass="0" class="SimpleFill" locked="0">
@@ -145,7 +145,7 @@
           </layer-tree-layer>
           <layer-tree-layer expanded="0" providerKey="ogr" checked="Qt::Checked" id="receivers_100020190911111317082" source="D:/Github/pysim5g/results/shapes/receivers_1000.shp" name="receivers_1000">
             <customproperties>
-              <property key="legend/title-label" value="Receiver capacity (Mbps km^2)"/>
+              <property key="legend/title-label" value="Capacity (Mbps)"/>
             </customproperties>
           </layer-tree-layer>
           <layer-tree-layer expanded="1" providerKey="ogr" checked="Qt::Checked" id="interfering_transmitters_100020190821111004333" source="D:/Github/pysim5g/results/shapes/interfering_transmitters_1000.shp" name="interfering_transmitters_1000">
@@ -159,7 +159,7 @@
             </customproperties>
           </layer-tree-layer>
         </layer-tree-group>
-        <ComposerItem pagey="10.4817" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="219.969" y="10.4817" visibility="1" zValue="3" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="62.4" outlineWidth="0.3" excludeFromExports="0" uuid="{faa0d3fd-8d10-401e-ab5a-ab6c44cc97bb}" height="97.9" itemRotation="0" frame="false" pagex="219.969">
+        <ComposerItem pagey="10.4817" page="1" id="" lastValidViewScaleFactor="-1" positionMode="0" positionLock="false" x="219.969" y="10.4817" visibility="1" zValue="2" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="54.7" outlineWidth="0.3" excludeFromExports="0" uuid="{faa0d3fd-8d10-401e-ab5a-ab6c44cc97bb}" height="97.9" itemRotation="0" frame="false" pagex="219.969">
           <FrameColor alpha="255" red="0" blue="0" green="0"/>
           <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
           <customproperties/>
@@ -218,7 +218,7 @@
           <annotationFontProperties description="MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0" style=""/>
         </ComposerMapGrid>
         <AtlasMap scalingMode="2" atlasDriven="0" margin="0.10000000000000001"/>
-        <ComposerItem pagey="3" page="1" id="" lastValidViewScaleFactor="3.35047" positionMode="0" positionLock="false" x="3" y="3" visibility="1" zValue="2" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="289" outlineWidth="0.3" excludeFromExports="0" uuid="{d23c7d0a-0ea5-4448-a265-50da4c6bd238}" height="203" itemRotation="0" frame="false" pagex="3">
+        <ComposerItem pagey="3" page="1" id="" lastValidViewScaleFactor="2.03119" positionMode="0" positionLock="false" x="3" y="3" visibility="1" zValue="1" background="true" transparency="0" frameJoinStyle="miter" blendMode="0" width="289" outlineWidth="0.3" excludeFromExports="0" uuid="{d23c7d0a-0ea5-4448-a265-50da4c6bd238}" height="203" itemRotation="0" frame="false" pagex="3">
           <FrameColor alpha="255" red="0" blue="0" green="0"/>
           <BackgroundColor alpha="255" red="255" blue="255" green="255"/>
           <customproperties/>
@@ -236,26 +236,26 @@
         <ymax>20037508.33999999985098839</ymax>
       </extent>
       <id>OpenStreetMap20190821111320542</id>
-      <datasource>&lt;GDAL_WMS>&#xd;
-  &lt;Service name="TMS">&#xd;
-    &lt;ServerUrl>http://tile.openstreetmap.org/${z}/${x}/${y}.png&lt;/ServerUrl>&#xd;
-  &lt;/Service>&#xd;
-  &lt;DataWindow>&#xd;
-    &lt;UpperLeftX>-20037508.34&lt;/UpperLeftX>&#xd;
-    &lt;UpperLeftY>20037508.34&lt;/UpperLeftY>&#xd;
-    &lt;LowerRightX>20037508.34&lt;/LowerRightX>&#xd;
-    &lt;LowerRightY>-20037508.34&lt;/LowerRightY>&#xd;
-    &lt;TileLevel>19&lt;/TileLevel>&#xd;
-    &lt;TileCountX>1&lt;/TileCountX>&#xd;
-    &lt;TileCountY>1&lt;/TileCountY>&#xd;
-    &lt;YOrigin>top&lt;/YOrigin>&#xd;
-  &lt;/DataWindow>&#xd;
-  &lt;Projection>EPSG:3857&lt;/Projection>&#xd;
-  &lt;BlockSizeX>256&lt;/BlockSizeX>&#xd;
-  &lt;BlockSizeY>256&lt;/BlockSizeY>&#xd;
-  &lt;BandsCount>3&lt;/BandsCount>&#xd;
-  &lt;Cache />&#xd;
-&lt;/GDAL_WMS>&#xd;
+      <datasource>&lt;GDAL_WMS>&#xd;&#xd;
+  &lt;Service name="TMS">&#xd;&#xd;
+    &lt;ServerUrl>http://tile.openstreetmap.org/${z}/${x}/${y}.png&lt;/ServerUrl>&#xd;&#xd;
+  &lt;/Service>&#xd;&#xd;
+  &lt;DataWindow>&#xd;&#xd;
+    &lt;UpperLeftX>-20037508.34&lt;/UpperLeftX>&#xd;&#xd;
+    &lt;UpperLeftY>20037508.34&lt;/UpperLeftY>&#xd;&#xd;
+    &lt;LowerRightX>20037508.34&lt;/LowerRightX>&#xd;&#xd;
+    &lt;LowerRightY>-20037508.34&lt;/LowerRightY>&#xd;&#xd;
+    &lt;TileLevel>19&lt;/TileLevel>&#xd;&#xd;
+    &lt;TileCountX>1&lt;/TileCountX>&#xd;&#xd;
+    &lt;TileCountY>1&lt;/TileCountY>&#xd;&#xd;
+    &lt;YOrigin>top&lt;/YOrigin>&#xd;&#xd;
+  &lt;/DataWindow>&#xd;&#xd;
+  &lt;Projection>EPSG:3857&lt;/Projection>&#xd;&#xd;
+  &lt;BlockSizeX>256&lt;/BlockSizeX>&#xd;&#xd;
+  &lt;BlockSizeY>256&lt;/BlockSizeY>&#xd;&#xd;
+  &lt;BandsCount>3&lt;/BandsCount>&#xd;&#xd;
+  &lt;Cache />&#xd;&#xd;
+&lt;/GDAL_WMS>&#xd;&#xd;
 </datasource>
       <keywordList>
         <value></value>
@@ -414,7 +414,7 @@
         </symbol>
       </SingleCategoryDiagramRenderer>
       <DiagramLayerSettings yPosColumn="0" showColumn="0" linePlacementFlags="10" placement="0" dist="0" xPosColumn="0" priority="0" obstacle="0" zIndex="0" showAll="1"/>
-      <annotationform></annotationform>
+      <annotationform>.</annotationform>
       <aliases>
         <alias field="site_id" index="0" name=""/>
       </aliases>
@@ -585,7 +585,7 @@ def my_form_open(dialog, layer, feature):
         </symbol>
       </SingleCategoryDiagramRenderer>
       <DiagramLayerSettings yPosColumn="0" showColumn="0" linePlacementFlags="10" placement="0" dist="0" xPosColumn="0" priority="0" obstacle="0" zIndex="0" showAll="1"/>
-      <annotationform></annotationform>
+      <annotationform>.</annotationform>
       <aliases>
         <alias field="site_id" index="0" name=""/>
       </aliases>
@@ -1020,7 +1020,7 @@ def my_form_open(dialog, layer, feature):
         </symbol>
       </SingleCategoryDiagramRenderer>
       <DiagramLayerSettings yPosColumn="0" showColumn="0" linePlacementFlags="10" placement="0" dist="0" xPosColumn="0" priority="0" obstacle="0" zIndex="0" showAll="1"/>
-      <annotationform></annotationform>
+      <annotationform>.</annotationform>
       <aliases>
         <alias field="path_loss" index="0" name=""/>
         <alias field="received_p" index="1" name=""/>
@@ -1582,6 +1582,7 @@ def my_form_open(dialog, layer, feature):
       <SingleCategoryDiagramRenderer diagramType="Histogram" sizeLegend="0" attributeLegend="1">
         <DiagramCategory penColor="#000000" labelPlacementMethod="XHeight" penWidth="0" diagramOrientation="Up" sizeScale="0,0,0,0,0,0" minimumSize="0" barWidth="5" penAlpha="255" maxScaleDenominator="1e+08" backgroundColor="#ffffff" transparency="0" width="15" scaleDependency="Area" backgroundAlpha="255" angleOffset="1440" scaleBasedVisibility="0" enabled="0" height="15" lineSizeScale="0,0,0,0,0,0" sizeType="MM" lineSizeType="MM" minScaleDenominator="inf">
           <fontProperties description="MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0" style=""/>
+          <attribute field="" color="#000000" label=""/>
         </DiagramCategory>
         <symbol alpha="1" clip_to_extent="1" type="marker" name="sizeSymbol">
           <layer pass="0" class="SimpleMarker" locked="0">
@@ -1607,7 +1608,7 @@ def my_form_open(dialog, layer, feature):
         </symbol>
       </SingleCategoryDiagramRenderer>
       <DiagramLayerSettings yPosColumn="-1" showColumn="-1" linePlacementFlags="10" placement="0" dist="0" xPosColumn="-1" priority="0" obstacle="0" zIndex="0" showAll="1"/>
-      <annotationform></annotationform>
+      <annotationform>.</annotationform>
       <aliases>
         <alias field="path_loss" index="0" name=""/>
         <alias field="received_p" index="1" name=""/>
@@ -1621,7 +1622,7 @@ def my_form_open(dialog, layer, feature):
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <attributeactions default="-1"/>
-      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="7602273">
+      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
         <columns>
           <column width="-1" hidden="0" type="field" name="path_loss"/>
           <column width="-1" hidden="0" type="field" name="received_p"/>
@@ -1634,10 +1635,10 @@ def my_form_open(dialog, layer, feature):
           <column width="-1" hidden="1" type="actions"/>
         </columns>
       </attributetableconfig>
-      <editform></editform>
+      <editform>.</editform>
       <editforminit/>
       <editforminitcodesource>0</editforminitcodesource>
-      <editforminitfilepath></editforminitfilepath>
+      <editforminitfilepath>.</editforminitfilepath>
       <editforminitcode><![CDATA[# -*- coding: utf-8 -*-
 """
 QGIS forms can have a Python function that is called when the form is
@@ -1792,7 +1793,7 @@ def my_form_open(dialog, layer, feature):
         </symbol>
       </SingleCategoryDiagramRenderer>
       <DiagramLayerSettings yPosColumn="0" showColumn="0" linePlacementFlags="10" placement="0" dist="0" xPosColumn="0" priority="0" obstacle="0" zIndex="0" showAll="1"/>
-      <annotationform></annotationform>
+      <annotationform>.</annotationform>
       <aliases>
         <alias field="site_id" index="0" name=""/>
       </aliases>
@@ -2089,6 +2090,7 @@ def my_form_open(dialog, layer, feature):
       <SingleCategoryDiagramRenderer diagramType="Histogram" sizeLegend="0" attributeLegend="1">
         <DiagramCategory penColor="#000000" labelPlacementMethod="XHeight" penWidth="0" diagramOrientation="Up" sizeScale="0,0,0,0,0,0" minimumSize="0" barWidth="5" penAlpha="255" maxScaleDenominator="1e+08" backgroundColor="#ffffff" transparency="0" width="15" scaleDependency="Area" backgroundAlpha="255" angleOffset="1440" scaleBasedVisibility="0" enabled="0" height="15" lineSizeScale="0,0,0,0,0,0" sizeType="MM" lineSizeType="MM" minScaleDenominator="inf">
           <fontProperties description="MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0" style=""/>
+          <attribute field="" color="#000000" label=""/>
         </DiagramCategory>
         <symbol alpha="1" clip_to_extent="1" type="marker" name="sizeSymbol">
           <layer pass="0" class="SimpleMarker" locked="0">
@@ -2114,23 +2116,23 @@ def my_form_open(dialog, layer, feature):
         </symbol>
       </SingleCategoryDiagramRenderer>
       <DiagramLayerSettings yPosColumn="-1" showColumn="-1" linePlacementFlags="10" placement="0" dist="0" xPosColumn="-1" priority="0" obstacle="0" zIndex="0" showAll="1"/>
-      <annotationform></annotationform>
+      <annotationform>.</annotationform>
       <aliases>
         <alias field="site_id" index="0" name=""/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <attributeactions default="-1"/>
-      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="783045864">
+      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
         <columns>
           <column width="-1" hidden="0" type="field" name="site_id"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
       </attributetableconfig>
-      <editform></editform>
+      <editform>.</editform>
       <editforminit/>
       <editforminitcodesource>0</editforminitcodesource>
-      <editforminitfilepath></editforminitfilepath>
+      <editforminitfilepath>.</editforminitfilepath>
       <editforminitcode><![CDATA[# -*- coding: utf-8 -*-
 """
 QGIS forms can have a Python function that is called when the form is
