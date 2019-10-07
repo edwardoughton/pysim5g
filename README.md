@@ -52,6 +52,10 @@ The run the tests:
 
     pytest
 
+To generate results run:
+
+    python scripts/run.py
+    
 To visualize the results, install `matplotlib`, `pandas` and `seaborn`:
 
     conda install matplotlib pandas seaborn
