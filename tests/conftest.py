@@ -302,16 +302,19 @@ def setup_modulation_coding_lut():
 @pytest.fixture
 def setup_parameters():
     return  {
-        'iterations': 20,
+        'iterations': 5,
         'seed_value1': 1,
         'seed_value2': 2,
         'indoor_users_percentage': 50,
         'los_breakpoint_m': 250,
-        'tx_baseline_height': 30,
-        'tx_upper_height': 40,
-        'tx_power': 40,
-        'tx_gain': 16,
-        'tx_losses': 1,
+        'tx_macro_baseline_height': 30,
+        'tx_macro_power': 40,
+        'tx_macro_gain': 16,
+        'tx_macro_losses': 1,
+        'tx_micro_baseline_height': 10,
+        'tx_micro_power': 24,
+        'tx_micro_gain': 5,
+        'tx_micro_losses': 1,
         'rx_gain': 4,
         'rx_losses': 4,
         'rx_misc_losses': 4,
@@ -320,9 +323,9 @@ def setup_parameters():
         'street_width': 20,
         'above_roof': 0,
         'network_load': 50,
-        'percentile': 50,
+        'percentile': 10,
         'sectorization': 3,
-        'overbooking_factor': 50,
+        #'overbooking_factor': 50,
         'mnos': 2,
         'asset_lifetime': 10,
         'discount_rate': 3.5,
@@ -330,12 +333,13 @@ def setup_parameters():
     }
 
 
+
 @pytest.fixture
 def base_system(setup_transmitter, setup_interfering_transmitters,
-        setup_receivers, setup_site_area, setup_parameters):
+        setup_ant_type, setup_receivers, setup_site_area, setup_parameters):
 
     system = SimulationManager(setup_transmitter, setup_interfering_transmitters,
-        setup_receivers, setup_site_area, setup_parameters)
+        setup_ant_type, setup_receivers, setup_site_area, setup_parameters)
 
     return system
 
@@ -412,3 +416,8 @@ def setup_site_radius():
 @pytest.fixture
 def setup_environment():
     return 'urban'
+
+
+@pytest.fixture
+def setup_ant_type():
+    return 'macro'
