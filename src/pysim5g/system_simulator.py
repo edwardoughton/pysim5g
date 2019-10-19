@@ -36,9 +36,9 @@ class SimulationManager(object):
 
     """
     def __init__(self, transmitter, interfering_transmitters,
-        receivers, site_area, simulation_parameters):
+        ant_type, receivers, site_area, simulation_parameters):
 
-        self.transmitter = Transmitter(transmitter[0], simulation_parameters)
+        self.transmitter = Transmitter(transmitter[0], ant_type, simulation_parameters)
         self.interfering_transmitters = {}
         self.receivers = {}
         self.site_area = SiteArea(site_area[0])
@@ -46,7 +46,7 @@ class SimulationManager(object):
         for interfering_transmitter in interfering_transmitters:
             site_id = interfering_transmitter['properties']["site_id"]
             site_object = InterferingTransmitter(
-                interfering_transmitter, simulation_parameters
+                interfering_transmitter, ant_type, simulation_parameters
                 )
             self.interfering_transmitters[site_id] = site_object
 
@@ -57,7 +57,7 @@ class SimulationManager(object):
 
 
     def estimate_link_budget(self, frequency, bandwidth,
-        generation, mast_height, environment,
+        generation, ant_type, environment,
         modulation_and_coding_lut, simulation_parameters):
         """
 
@@ -71,8 +71,8 @@ class SimulationManager(object):
             The bandwidth of the carrier frequency (MHz).
         generation : string
             Either 4G or 5G dependent on technology.
-        mast_height : int
-            Height of the modelled transmitters in meters.
+        ant_type : str
+            Type of antenna (macro, small etc.).
         environment : string
             Either urban, suburban or rural.
         modulation_and_coding_lut : list of tuples
@@ -191,6 +191,9 @@ class SimulationManager(object):
         )
 
         strt_distance = temp_line.length
+
+        if strt_distance < 20:
+            strt_distance = 20
 
         ant_height = self.transmitter.ant_height
         ant_type =  self.transmitter.ant_type
@@ -316,6 +319,8 @@ class SimulationManager(object):
             )
 
             interference_strt_distance = temp_line.length
+            if interference_strt_distance < 20:
+                interference_strt_distance == 20
 
             ant_height = interfering_transmitter.ant_height
             ant_type =  interfering_transmitter.ant_type
@@ -586,16 +591,24 @@ class Transmitter(object):
         A dict containing all simulation parameters necessary.
 
     """
-    def __init__(self, data, simulation_parameters):
+    def __init__(self, data, ant_type, simulation_parameters):
 
         self.id = data['properties']['site_id']
         self.coordinates = data['geometry']['coordinates']
 
-        self.ant_type = 'macro'
-        self.ant_height = simulation_parameters['tx_baseline_height']
-        self.power = simulation_parameters['tx_power']
-        self.gain = simulation_parameters['tx_gain']
-        self.losses = simulation_parameters['tx_losses']
+        self.ant_type = ant_type
+
+        if ant_type == 'macro':
+            self.ant_height = simulation_parameters['tx_macro_baseline_height']
+            self.power = simulation_parameters['tx_macro_power']
+            self.gain = simulation_parameters['tx_macro_gain']
+            self.losses = simulation_parameters['tx_macro_losses']
+
+        if ant_type == 'micro':
+            self.ant_height = simulation_parameters['tx_micro_baseline_height']
+            self.power = simulation_parameters['tx_micro_power']
+            self.gain = simulation_parameters['tx_micro_gain']
+            self.losses = simulation_parameters['tx_micro_losses']
 
 
 class InterferingTransmitter(object):
@@ -611,16 +624,24 @@ class InterferingTransmitter(object):
         A dict containing all simulation parameters necessary.
 
     """
-    def __init__(self, data, simulation_parameters):
+    def __init__(self, data, ant_type, simulation_parameters):
 
         self.id = data['properties']['site_id']
         self.coordinates = data['geometry']['coordinates']
 
-        self.ant_type = 'macro'
-        self.ant_height = simulation_parameters['tx_baseline_height']
-        self.power = simulation_parameters['tx_power']
-        self.gain = simulation_parameters['tx_gain']
-        self.losses = simulation_parameters['tx_losses']
+        self.ant_type = ant_type
+
+        if ant_type == 'macro':
+            self.ant_height = simulation_parameters['tx_macro_baseline_height']
+            self.power = simulation_parameters['tx_macro_power']
+            self.gain = simulation_parameters['tx_macro_gain']
+            self.losses = simulation_parameters['tx_macro_losses']
+
+        if ant_type == 'micro':
+            self.ant_height = simulation_parameters['tx_micro_baseline_height']
+            self.power = simulation_parameters['tx_micro_power']
+            self.gain = simulation_parameters['tx_micro_gain']
+            self.losses = simulation_parameters['tx_micro_losses']
 
 
 class Receiver(object):

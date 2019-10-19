@@ -118,98 +118,138 @@ def etsi_tr_138_901(frequency, distance, ant_height, ant_type,
 
     check_3gpp_applicability(building_height, street_width, ant_height, ue_height)
 
-    if settlement_type == 'suburban' or settlement_type == 'rural':
-        pl1 = round(
-            20*np.log10(40*pi*d3d*fc/3) + min(0.03*h**1.72,10) *
-            np.log10(d3d) - min(0.044*h**1.72,14.77) +
-            0.002*np.log10(h)*d3d +
-            generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value)
-        )
-
-        if 10 <= d2d <= dbp:
-            if type_of_sight == 'los':
-                return pl1
-        pl_rma_los = pl1
-
-        pl2 = round(
-            20*np.log10(40*pi*dbp*fc/3) + min(0.03*h**1.72,10) *
-            np.log10(dbp) - min(0.044*h**1.72,14.77) +
-            0.002*np.log10(h)*dbp +
-            generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value) +
-            40*np.log10(d3d / dbp) +
-            generate_log_normal_dist_value(fc, 1, 6, iterations, seed_value)
-        )
-
-        if dbp <= d2d <= 10000:
-            if type_of_sight == 'los':
-                return pl2
-        pl_rma_los = pl2
-
-        if type_of_sight == 'nlos':
-
-            pl_apostrophe_rma_nlos = round(
-                161.04 - 7.1 * np.log10(w)+7.5*np.log10(h) -
-                (24.37 - 3.7 * (h/hbs)**2)*np.log10(hbs) +
-                (43.42 - 3.1*np.log10(hbs))*(np.log10(d3d)-3) +
-                20*np.log10(fc) - (3.2 * (np.log10(11.75*hut))**2 - 4.97) +
-                generate_log_normal_dist_value(fc, 1, 8, iterations, seed_value)
+    if ant_type == 'macro':
+        if settlement_type == 'suburban' or settlement_type == 'rural':
+            pl1 = round(
+                20*np.log10(40*pi*d3d*fc/3) + min(0.03*h**1.72,10) *
+                np.log10(d3d) - min(0.044*h**1.72,14.77) +
+                0.002*np.log10(h)*d3d +
+                generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value)
             )
 
-            # # currently does not cap at 5km, which this should
-            pl_rma_nlos = max(pl_apostrophe_rma_nlos, pl_rma_los)
+            if 10 <= d2d <= dbp:
+                if type_of_sight == 'los':
+                    return pl1
+            pl_rma_los = pl1
 
-            return pl_rma_nlos
+            pl2 = round(
+                20*np.log10(40*pi*dbp*fc/3) + min(0.03*h**1.72,10) *
+                np.log10(dbp) - min(0.044*h**1.72,14.77) +
+                0.002*np.log10(h)*dbp +
+                generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value) +
+                40*np.log10(d3d / dbp) +
+                generate_log_normal_dist_value(fc, 1, 6, iterations, seed_value)
+            )
 
-        if d2d > 10000:
-            return uma_nlos_optional(frequency, distance, ant_height, ue_height,
-                seed_value, iterations)
+            if dbp <= d2d <= 10000:
+                if type_of_sight == 'los':
+                    return pl2
+            pl_rma_los = pl2
 
-    elif settlement_type == 'urban':
+            if type_of_sight == 'nlos':
 
-        pl1 = round(
-            28 + 22 * np.log10(d3d) + 20 * np.log10(fc) +
-            generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value)
-        )
-
-        if 10 <= d2d <= d_apost_bp:
-            if type_of_sight == 'los':
-                return pl1
-            pl_uma_los = pl1
-
-        pl2 = round(
-            28 + 40*np.log10(d3d) + 20 * np.log10(fc) -
-            9*np.log10((d_apost_bp)**2 + (hbs-hut)**2) +
-            generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value)
-        )
-
-        if d_apost_bp <= d2d <= 5000:
-            if type_of_sight == 'los':
-                return pl2
-        pl_uma_los = pl2
-
-        if type_of_sight == 'nlos':
-
-            if d2d <= 5000:
-                pl_apostrophe_uma_nlos = round(
-                    13.54 + 39.08 * np.log10(d3d) + 20 *
-                    np.log10(fc) - 0.6 * (hut - 1.5) +
-                    generate_log_normal_dist_value(fc, 1, 6, iterations, seed_value)
+                pl_apostrophe_rma_nlos = round(
+                    161.04 - 7.1 * np.log10(w)+7.5*np.log10(h) -
+                    (24.37 - 3.7 * (h/hbs)**2)*np.log10(hbs) +
+                    (43.42 - 3.1*np.log10(hbs))*(np.log10(d3d)-3) +
+                    20*np.log10(fc) - (3.2 * (np.log10(11.75*hut))**2 - 4.97) +
+                    generate_log_normal_dist_value(fc, 1, 8, iterations, seed_value)
                 )
 
-            if d2d > 5000:
-                pl_apostrophe_uma_nlos = uma_nlos_optional(frequency, distance, ant_height,
-                    ue_height, seed_value, iterations)
+                # # currently does not cap at 5km, which this should
+                pl_rma_nlos = max(pl_apostrophe_rma_nlos, pl_rma_los)
 
-            pl_uma_nlos = max(pl_apostrophe_uma_nlos, pl_uma_los)
+                return pl_rma_nlos
 
-            return pl_uma_nlos
+            if d2d > 10000:
+                return uma_nlos_optional(frequency, distance, ant_height, ue_height,
+                    seed_value, iterations)
+
+        elif settlement_type == 'urban':
+
+            pl1 = round(
+                28 + 22 * np.log10(d3d) + 20 * np.log10(fc) +
+                generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value)
+            )
+
+            if 10 <= d2d <= d_apost_bp:
+                if type_of_sight == 'los':
+                    return pl1
+                pl_uma_los = pl1
+
+            pl2 = round(
+                28 + 40*np.log10(d3d) + 20 * np.log10(fc) -
+                9*np.log10((d_apost_bp)**2 + (hbs-hut)**2) +
+                generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value)
+            )
+
+            if d_apost_bp <= d2d <= 5000:
+                if type_of_sight == 'los':
+                    return pl2
+            pl_uma_los = pl2
+
+            if type_of_sight == 'nlos':
+
+                if d2d <= 5000:
+                    pl_apostrophe_uma_nlos = round(
+                        13.54 + 39.08 * np.log10(d3d) + 20 *
+                        np.log10(fc) - 0.6 * (hut - 1.5) +
+                        generate_log_normal_dist_value(fc, 1, 6, iterations, seed_value)
+                    )
+
+                if d2d > 5000:
+                    pl_apostrophe_uma_nlos = uma_nlos_optional(frequency, distance, ant_height,
+                        ue_height, seed_value, iterations)
+
+                pl_uma_nlos = max(pl_apostrophe_uma_nlos, pl_uma_los)
+
+                return pl_uma_nlos
+
+        else:
+            # return uma_nlos_optional(frequency, distance, ant_height, ue_height,
+            #     seed_value, iterations)
+            raise ValueError('Did not recognise settlement_type')
+
+    elif ant_type == 'micro':
+
+            pl1 = round(
+                32.4 + 21 * np.log10(d3d) + 20 * np.log10(fc) +
+                generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value)
+            )
+
+            if 10 <= d2d <= d_apost_bp:
+                if type_of_sight == 'los':
+                    return pl1
+                pl_umi_los = pl1
+
+            pl2 = round(
+                32.4 + 40*np.log10(d3d) + 20 * np.log10(fc) -
+                9.5*np.log10((d_apost_bp)**2 + (hbs-hut)**2) +
+                generate_log_normal_dist_value(fc, 1, 4, iterations, seed_value)
+            )
+
+            if d_apost_bp <= d2d <= 5000:
+                if type_of_sight == 'los':
+                    return pl2
+            pl_umi_los = pl2
+
+            if type_of_sight == 'nlos':
+
+                if d2d <= 5000:
+                    pl_apostrophe_umi_nlos = round(
+                        35.3 * np.log10(d3d) + 22.4 +
+                        21.3 * np.log10(fc) - 0.3 * (hut - 1.5) +
+                        generate_log_normal_dist_value(fc, 1, 7.82, iterations, seed_value)
+                    )
+
+                pl_uma_nlos = max(pl_apostrophe_umi_nlos, pl_umi_los)
+
+                return pl_uma_nlos
 
     else:
-        # return uma_nlos_optional(frequency, distance, ant_height, ue_height,
-        #     seed_value, iterations)
-        raise ValueError('Did not recognise settlement_type')
+        raise ValueError('Did not recognise ant_type')
 
-    return print('complete')
+    return 'complete'
 
 
 def uma_nlos_optional(frequency, distance, ant_height, ue_height,

@@ -320,7 +320,7 @@ def convert_results_geojson(data):
 
 
 def write_full_results(data, environment, site_radius, frequency,
-    bandwidth, generation, ant_height, directory, filename,
+    bandwidth, generation, ant_type, directory, filename,
     parameters):
     """
 
@@ -340,8 +340,8 @@ def write_full_results(data, environment, site_radius, frequency,
         Channel bandwidth of carrier band in MHz.
     generation : string
         Either 4G or 5G depending on technology generation.
-    ant_height : int
-        Height of the transmitters modelled in meters.
+    ant_type : int
+        The type of transmitter modelled (macro, micro etc.).
     directory : string
         Folder the data will be written to.
     filename : string
@@ -373,7 +373,7 @@ def write_full_results(data, environment, site_radius, frequency,
             'bandwidth_MHz',
             'number_of_sectors',
             'generation',
-            'ant_height_m',
+            'ant_type',
             'receiver_x',
             'receiver_y',
             'path_loss_dB',
@@ -398,7 +398,7 @@ def write_full_results(data, environment, site_radius, frequency,
             bandwidth,
             sectors,
             generation,
-            ant_height,
+            ant_type,
             row['receiver_x'],
             row['receiver_y'],
             row['path_loss'],
@@ -415,7 +415,7 @@ def write_full_results(data, environment, site_radius, frequency,
 
 
 def write_frequency_lookup_table(result, environment, site_radius,
-    frequency, bandwidth, generation, ant_height,
+    frequency, bandwidth, generation, ant_type,
     directory, filename, parameters):
     """
 
@@ -436,8 +436,8 @@ def write_frequency_lookup_table(result, environment, site_radius,
         Channel bandwidth of carrier band in MHz.
     generation : string
         Either 4G or 5G depending on technology generation.
-    ant_height : int
-        Height of the transmitters modelled in meters.
+    ant_type : int
+        Type of transmitters modelled.
     directory : string
         Folder the data will be written to.
     filename : string
@@ -471,7 +471,7 @@ def write_frequency_lookup_table(result, environment, site_radius,
                 'bandwidth_MHz',
                 'number_of_sectors',
                 'generation',
-                'ant_height_m',
+                'ant_type',
                 'path_loss_dB',
                 'received_power_dBm',
                 'interference_dBm',
@@ -496,7 +496,7 @@ def write_frequency_lookup_table(result, environment, site_radius,
             bandwidth,
             sectors,
             generation,
-            ant_height,
+            ant_type,
             result['path_loss'],
             result['received_power'],
             result['interference'],
@@ -856,7 +856,7 @@ def write_shapefile(data, directory, filename, crs):
 
 
 def run_simulator(parameters, spectrum_portfolio,
-    ant_heights, site_radii, modulation_and_coding_lut, costs):
+    ant_types, site_radii, modulation_and_coding_lut, costs):
     """
 
     Function to run the simulator and all associated modules.
@@ -883,30 +883,31 @@ def run_simulator(parameters, spectrum_portfolio,
     ]
 
     for environment in environments:
-        for site_radius in site_radii[environment]:
+        for ant_type in ant_types:
+            site_radii_generator = site_radii[ant_type]
+            for site_radius in site_radii_generator[environment]:
 
-            print('--working on {}: {}'.format(environment, site_radius))
+                print('--working on {}: {}'.format(environment, site_radius))
 
-            transmitter, interfering_transmitters, site_area, interfering_site_areas = \
-                produce_sites_and_site_areas(
-                    unprojected_point['geometry']['coordinates'],
-                    site_radius,
-                    unprojected_crs,
-                    projected_crs
-                    )
+                transmitter, interfering_transmitters, site_area, interfering_site_areas = \
+                    produce_sites_and_site_areas(
+                        unprojected_point['geometry']['coordinates'],
+                        site_radius,
+                        unprojected_crs,
+                        projected_crs
+                        )
 
-            receivers = generate_receivers(site_area, PARAMETERS, 1)
+                receivers = generate_receivers(site_area, PARAMETERS, 1)
 
-            for frequency, bandwidth, generation in spectrum_portfolio:
-                for ant_height in ant_heights:
+                for frequency, bandwidth, generation in spectrum_portfolio:
 
                     MANAGER = SimulationManager(
-                        transmitter, interfering_transmitters, receivers,
-                        site_area, PARAMETERS
+                        transmitter, interfering_transmitters, ant_type,
+                        receivers, site_area, PARAMETERS
                         )
 
                     results = MANAGER.estimate_link_budget(
-                        frequency, bandwidth, generation, ant_height,
+                        frequency, bandwidth, generation, ant_type,
                         environment,
                         MODULATION_AND_CODING_LUT,
                         PARAMETERS
@@ -914,10 +915,10 @@ def run_simulator(parameters, spectrum_portfolio,
 
                     folder = os.path.join(BASE_PATH, '..', 'results', 'full_tables')
                     filename = 'full_capacity_lut_{}_{}_{}_{}.csv'.format(
-                        environment, site_radius, frequency, ant_height)
+                        environment, site_radius, frequency, ant_type)
 
                     write_full_results(results, environment, site_radius,
-                        frequency, bandwidth, generation, ant_height,
+                        frequency, bandwidth, generation, ant_type,
                         folder, filename, parameters)
 
                     percentile_site_results = obtain_percentile_values(
@@ -927,7 +928,7 @@ def run_simulator(parameters, spectrum_portfolio,
                     results_directory = os.path.join(BASE_PATH, '..', 'results')
                     write_frequency_lookup_table(percentile_site_results, environment,
                         site_radius, frequency, bandwidth, generation,
-                        ant_height, results_directory,
+                        ant_type, results_directory,
                         'capacity_lut_by_frequency_{}.csv'.format(parameters['percentile']),
                         parameters
                     )
@@ -944,43 +945,43 @@ def run_simulator(parameters, spectrum_portfolio,
                             parameters['percentile'])
                         )
 
-                    geojson_receivers = convert_results_geojson(results)
+                    # geojson_receivers = convert_results_geojson(results)
 
-                    write_shapefile(
-                        geojson_receivers, os.path.join(results_directory, 'shapes'),
-                        'receivers_{}.shp'.format(site_radius),
-                        projected_crs
-                        )
+                    # write_shapefile(
+                    #     geojson_receivers, os.path.join(results_directory, 'shapes'),
+                    #     'receivers_{}.shp'.format(site_radius),
+                    #     projected_crs
+                    #     )
 
-                    write_shapefile(
-                        transmitter, os.path.join(results_directory, 'shapes'),
-                        'transmitter_{}.shp'.format(site_radius),
-                        projected_crs
-                    )
+                    # write_shapefile(
+                    #     transmitter, os.path.join(results_directory, 'shapes'),
+                    #     'transmitter_{}.shp'.format(site_radius),
+                    #     projected_crs
+                    # )
 
-                    write_shapefile(
-                        site_area, os.path.join(results_directory, 'shapes'),
-                        'site_area_{}.shp'.format(site_radius),
-                        projected_crs
-                    )
+                    # write_shapefile(
+                    #     site_area, os.path.join(results_directory, 'shapes'),
+                    #     'site_area_{}.shp'.format(site_radius),
+                    #     projected_crs
+                    # )
 
-                    write_shapefile(
-                        interfering_transmitters, os.path.join(results_directory, 'shapes'),
-                        'interfering_transmitters_{}.shp'.format(site_radius),
-                        projected_crs
-                    )
+                    # write_shapefile(
+                    #     interfering_transmitters, os.path.join(results_directory, 'shapes'),
+                    #     'interfering_transmitters_{}.shp'.format(site_radius),
+                    #     projected_crs
+                    # )
 
-                    write_shapefile(
-                        interfering_site_areas, os.path.join(results_directory, 'shapes'),
-                        'interfering_site_areas_{}.shp'.format(site_radius),
-                        projected_crs
-                    )
+                    # write_shapefile(
+                    #     interfering_site_areas, os.path.join(results_directory, 'shapes'),
+                    #     'interfering_site_areas_{}.shp'.format(site_radius),
+                    #     projected_crs
+                    # )
 
-    write_export_strategy_costs(os.path.join(results_directory,
-        'percentile_{}_capacity_lut.csv'.format(PARAMETERS['percentile'])),
-        results_directory,
-        'aggregate_strategy_costs.csv'.format(PARAMETERS['percentile'])
-    )
+    # write_export_strategy_costs(os.path.join(results_directory,
+    #     'percentile_{}_capacity_lut.csv'.format(PARAMETERS['percentile'])),
+    #     results_directory,
+    #     'aggregate_strategy_costs.csv'.format(PARAMETERS['percentile'])
+    # )
 
 if __name__ == '__main__':
 
@@ -990,11 +991,14 @@ if __name__ == '__main__':
         'seed_value2': 2,
         'indoor_users_percentage': 50,
         'los_breakpoint_m': 250,
-        'tx_baseline_height': 30,
-        'tx_upper_height': 40,
-        'tx_power': 40,
-        'tx_gain': 16,
-        'tx_losses': 1,
+        'tx_macro_baseline_height': 30,
+        'tx_macro_power': 40,
+        'tx_macro_gain': 16,
+        'tx_macro_losses': 1,
+        'tx_micro_baseline_height': 10,
+        'tx_micro_power': 24,
+        'tx_micro_gain': 5,
+        'tx_micro_losses': 1,
         'rx_gain': 4,
         'rx_losses': 4,
         'rx_misc_losses': 4,
@@ -1003,7 +1007,7 @@ if __name__ == '__main__':
         'street_width': 20,
         'above_roof': 0,
         'network_load': 50,
-        'percentile': 50,
+        'percentile': 10,
         'sectorization': 3,
         #'overbooking_factor': 50,
         'mnos': 2,
@@ -1033,12 +1037,13 @@ if __name__ == '__main__':
         (1.8, 10, '4G'),
         (2.6, 10, '4G'),
         (3.5, 40, '5G'),
+        (3.7, 25, '5G'),
         (26, 100, '5G'),
     ]
 
-    ANT_HEIGHT = [
-        (30),
-        # (40)
+    ANT_TYPE = [
+        ('macro'),
+        ('micro'),
     ]
 
     MODULATION_AND_CODING_LUT =[
@@ -1082,21 +1087,33 @@ if __name__ == '__main__':
         for n in range(min, max, increment):
             yield n
 
-    INCREMENT = (400, 5400, 400)
+
+    INCREMENT_MA = (400,30400, 400)
+    INCREMENT_MI = (25, 500, 25)
 
     SITE_RADII = {
-        'urban':
-            generate_site_radii(INCREMENT[0],INCREMENT[1],INCREMENT[2]),
-        'suburban':
-            generate_site_radii(INCREMENT[0],INCREMENT[1],INCREMENT[2]),
-        'rural':
-            generate_site_radii(INCREMENT[0],INCREMENT[1],INCREMENT[2])
+        'macro': {
+            'urban':
+                generate_site_radii(INCREMENT_MA[0],INCREMENT_MA[1],INCREMENT_MA[2]),
+            'suburban':
+                generate_site_radii(INCREMENT_MA[0],INCREMENT_MA[1],INCREMENT_MA[2]),
+            'rural':
+                generate_site_radii(INCREMENT_MA[0],INCREMENT_MA[1],INCREMENT_MA[2])
+            },
+        'micro': {
+            'urban':
+                generate_site_radii(INCREMENT_MI[0],INCREMENT_MI[1],INCREMENT_MI[2]),
+            'suburban':
+                generate_site_radii(INCREMENT_MI[0],INCREMENT_MI[1],INCREMENT_MI[2]),
+            'rural':
+                generate_site_radii(INCREMENT_MI[0],INCREMENT_MI[1],INCREMENT_MI[2])
+            },
         }
 
     run_simulator(
         PARAMETERS,
         SPECTRUM_PORTFOLIO,
-        ANT_HEIGHT,
+        ANT_TYPE,
         SITE_RADII,
         MODULATION_AND_CODING_LUT,
         COSTS
