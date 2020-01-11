@@ -14,8 +14,8 @@ The tool includes statistical analysis of radio interference to assess the syste
 
 One example application of this framework includes exploring the techno-economics of 5G infrastructure sharing strategies.
 
-Citations
-=========
+Citation
+========
 
 - E. J. Oughton, K. Katsaros, F. Entezami, D. Kaleshi, and J. Crowcroft,
   ‘An Open-Source Techno-Economic Assessment Framework for 5G Deployment’,
