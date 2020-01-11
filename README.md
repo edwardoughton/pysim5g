@@ -23,8 +23,8 @@ Citation
 
 Example results
 ===============
-![](/example_results.png =250x)
-
+#![](/example_results.png =250x)
+<img src="example_results.jpg" alt="example_results" width="200"/>
 
 Setup and configuration
 =======================
