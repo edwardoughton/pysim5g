@@ -23,7 +23,7 @@ Citation
 
 Example results
 ===============
-![Example](/example_results.png =250x250)
+![](/example_results.png =250x)
 
 
 Setup and configuration
