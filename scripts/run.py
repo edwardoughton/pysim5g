@@ -986,11 +986,11 @@ def run_simulator(parameters, spectrum_portfolio,
 if __name__ == '__main__':
 
     PARAMETERS = {
-        'iterations': 5,
+        'iterations': 100,
         'seed_value1': 1,
         'seed_value2': 2,
         'indoor_users_percentage': 50,
-        'los_breakpoint_m': 250,
+        'los_breakpoint_m': 500,
         'tx_macro_baseline_height': 30,
         'tx_macro_power': 40,
         'tx_macro_gain': 16,
@@ -1007,9 +1007,8 @@ if __name__ == '__main__':
         'street_width': 20,
         'above_roof': 0,
         'network_load': 50,
-        'percentile': 10,
+        'percentile': 50,
         'sectorization': 3,
-        #'overbooking_factor': 50,
         'mnos': 2,
         'asset_lifetime': 10,
         'discount_rate': 3.5,
@@ -1087,8 +1086,7 @@ if __name__ == '__main__':
         for n in range(min, max, increment):
             yield n
 
-
-    INCREMENT_MA = (400,30400, 400)
+    INCREMENT_MA = (400, 30400, 400)
     INCREMENT_MI = (25, 500, 25)
 
     SITE_RADII = {

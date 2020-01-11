@@ -14,6 +14,18 @@ The tool includes statistical analysis of radio interference to assess the syste
 
 One example application of this framework includes exploring the techno-economics of 5G infrastructure sharing strategies.
 
+Citations
+=========
+
+- E. J. Oughton, K. Katsaros, F. Entezami, D. Kaleshi, and J. Crowcroft,
+  ‘An Open-Source Techno-Economic Assessment Framework for 5G Deployment’,
+  IEEE Access, vol. 7, pp. 155930–155940, 2019, https://doi.org/10.1109/ACCESS.2019.2949460.
+
+Example results
+===============
+![Example](/example_results.png)
+
+
 Setup and configuration
 =======================
 
@@ -55,7 +67,7 @@ The run the tests:
 To generate results run:
 
     python scripts/run.py
-    
+
 To visualize the results, install `matplotlib`, `pandas` and `seaborn`:
 
     conda install matplotlib pandas seaborn
