@@ -9,7 +9,6 @@ from rtree import index
 from shapely.geometry import shape, Point, LineString
 import numpy as np
 from itertools import tee
-from pyproj import Proj, transform
 from collections import OrderedDict
 
 from pysim5g.path_loss import path_loss_calculator

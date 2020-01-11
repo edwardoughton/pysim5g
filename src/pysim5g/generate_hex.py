@@ -40,8 +40,8 @@ def convert_point_to_projected_crs(point, original_crs, new_crs):
     """
     project = partial(
         pyproj.transform,
-        pyproj.Proj(init = original_crs),
-        pyproj.Proj(init = new_crs)
+        pyproj.Proj(original_crs),
+        pyproj.Proj(new_crs)
         )
 
     new_geom = transform(project, Point(point))
