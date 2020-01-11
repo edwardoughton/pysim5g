@@ -23,7 +23,7 @@ Citation
 
 Example results
 ===============
-![](/example_results.jpg)
+![Example](/example_results.jpg)
 
 Setup and configuration
 =======================
