@@ -376,6 +376,7 @@ def write_full_results(data, environment, site_radius, frequency,
             'ant_type',
             'receiver_x',
             'receiver_y',
+            'r_distance',
             'path_loss_dB',
             'r_model',
             'received_power_dB',
@@ -401,6 +402,7 @@ def write_full_results(data, environment, site_radius, frequency,
             ant_type,
             row['receiver_x'],
             row['receiver_y'],
+            row['distance'],
             row['path_loss'],
             row['r_model'],
             row['received_power'],
@@ -986,7 +988,7 @@ def run_simulator(parameters, spectrum_portfolio,
 if __name__ == '__main__':
 
     PARAMETERS = {
-        'iterations': 100,
+        'iterations': 1,
         'seed_value1': 1,
         'seed_value2': 2,
         'indoor_users_percentage': 50,
@@ -1086,8 +1088,8 @@ if __name__ == '__main__':
         for n in range(min, max, increment):
             yield n
 
-    INCREMENT_MA = (400, 30400, 400)
-    INCREMENT_MI = (25, 500, 25)
+    INCREMENT_MA = (5000, 5500, 500) #(400, 30400, 400)
+    INCREMENT_MI = (300, 400, 100)
 
     SITE_RADII = {
         'macro': {
