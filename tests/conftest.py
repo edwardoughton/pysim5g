@@ -266,36 +266,36 @@ def setup_receivers():
 def setup_modulation_coding_lut():
     return [
         #CQI Index	Modulation	Coding rate	Spectral efficiency (bps/Hz) SINR estimate (dB)
-        ('4G', 1, 'QPSK',	0.0762,	0.1523, -6.7),
-        ('4G', 2, 'QPSK',	0.1172,	0.2344, -4.7),
-        ('4G', 3, 'QPSK',	0.1885,	0.377, -2.3),
-        ('4G', 4, 'QPSK',	0.3008,	0.6016, 0.2),
-        ('4G', 5, 'QPSK',	0.4385,	0.877, 2.4),
-        ('4G', 6, 'QPSK',	0.5879,	1.1758,	4.3),
-        ('4G', 7, '16QAM', 0.3691, 1.4766, 5.9),
-        ('4G', 8, '16QAM', 0.4785, 1.9141, 8.1),
-        ('4G', 9, '16QAM', 0.6016, 2.4063, 10.3),
-        ('4G', 10, '64QAM', 0.4551, 2.7305, 11.7),
-        ('4G', 11, '64QAM', 0.5537, 3.3223, 14.1),
-        ('4G', 12, '64QAM', 0.6504, 3.9023, 16.3),
-        ('4G', 13, '64QAM', 0.7539, 4.5234, 18.7),
-        ('4G', 14, '64QAM', 0.8525, 5.1152, 21),
-        ('4G', 15, '64QAM', 0.9258, 5.5547, 22.7),
-        ('5G', 1, 'QPSK', 78, 0.1523, -6.7),
-        ('5G', 2, 'QPSK', 193, 0.377, -4.7),
-        ('5G', 3, 'QPSK', 449, 0.877, -2.3),
-        ('5G', 4, '16QAM', 378, 1.4766, 0.2),
-        ('5G', 5, '16QAM', 490, 1.9141, 2.4),
-        ('5G', 6, '16QAM', 616, 2.4063, 4.3),
-        ('5G', 7, '64QAM', 466, 2.7305, 5.9),
-        ('5G', 8, '64QAM', 567, 3.3223, 8.1),
-        ('5G', 9, '64QAM', 666, 3.9023, 10.3),
-        ('5G', 10, '64QAM', 772, 4.5234, 11.7),
-        ('5G', 11, '64QAM', 873, 5.1152, 14.1),
-        ('5G', 12, '256QAM', 711, 5.5547, 16.3),
-        ('5G', 13, '256QAM', 797, 6.2266, 18.7),
-        ('5G', 14, '256QAM', 885, 6.9141, 21),
-        ('5G', 15, '256QAM', 948, 7.4063, 22.7),
+        ('4G', '1x1', 1, 'QPSK',	0.0762,	0.1523, -6.7),
+        ('4G', '1x1', 2, 'QPSK',	0.1172,	0.2344, -4.7),
+        ('4G', '1x1', 3, 'QPSK',	0.1885,	0.377, -2.3),
+        ('4G', '1x1', 4, 'QPSK',	0.3008,	0.6016, 0.2),
+        ('4G', '1x1', 5, 'QPSK',	0.4385,	0.877, 2.4),
+        ('4G', '1x1', 6, 'QPSK',	0.5879,	1.1758,	4.3),
+        ('4G', '1x1', 7, '16QAM', 0.3691, 1.4766, 5.9),
+        ('4G', '1x1', 8, '16QAM', 0.4785, 1.9141, 8.1),
+        ('4G', '1x1', 9, '16QAM', 0.6016, 2.4063, 10.3),
+        ('4G', '1x1', 10, '64QAM', 0.4551, 2.7305, 11.7),
+        ('4G', '1x1', 11, '64QAM', 0.5537, 3.3223, 14.1),
+        ('4G', '1x1', 12, '64QAM', 0.6504, 3.9023, 16.3),
+        ('4G', '1x1', 13, '64QAM', 0.7539, 4.5234, 18.7),
+        ('4G', '1x1', 14, '64QAM', 0.8525, 5.1152, 21),
+        ('4G', '1x1', 15, '64QAM', 0.9258, 5.5547, 22.7),
+        ('5G', '1x1', 1, 'QPSK', 78, 0.1523, -6.7),
+        ('5G', '1x1', 2, 'QPSK', 193, 0.377, -4.7),
+        ('5G', '1x1', 3, 'QPSK', 449, 0.877, -2.3),
+        ('5G', '1x1', 4, '16QAM', 378, 1.4766, 0.2),
+        ('5G', '1x1', 5, '16QAM', 490, 1.9141, 2.4),
+        ('5G', '1x1', 6, '16QAM', 616, 2.4063, 4.3),
+        ('5G', '1x1', 7, '64QAM', 466, 2.7305, 5.9),
+        ('5G', '1x1', 8, '64QAM', 567, 3.3223, 8.1),
+        ('5G', '1x1', 9, '64QAM', 666, 3.9023, 10.3),
+        ('5G', '1x1', 10, '64QAM', 772, 4.5234, 11.7),
+        ('5G', '1x1', 11, '64QAM', 873, 5.1152, 14.1),
+        ('5G', '1x1', 12, '256QAM', 711, 5.5547, 16.3),
+        ('5G', '1x1', 13, '256QAM', 797, 6.2266, 18.7),
+        ('5G', '1x1', 14, '256QAM', 885, 6.9141, 21),
+        ('5G', '1x1', 15, '256QAM', 948, 7.4063, 22.7),
         ]
 
 
@@ -336,10 +336,13 @@ def setup_parameters():
 
 @pytest.fixture
 def base_system(setup_transmitter, setup_interfering_transmitters,
-        setup_ant_type, setup_receivers, setup_site_area, setup_parameters):
+        setup_ant_type, setup_receivers,
+        setup_site_area, setup_parameters):
 
-    system = SimulationManager(setup_transmitter, setup_interfering_transmitters,
-        setup_ant_type, setup_receivers, setup_site_area, setup_parameters)
+    system = SimulationManager(setup_transmitter,
+        setup_interfering_transmitters, setup_ant_type,
+        setup_receivers,
+        setup_site_area, setup_parameters)
 
     return system
 
@@ -380,6 +383,7 @@ def setup_projected_crs():
 def setup_data():
     return {
         'results_type': '10_percentile',
+        'transmission_type': '1x1',
         'path_loss': 96.85199999999999,
         'received_power': -54.666999999999994,
         'interference': -62.08299998089783,
@@ -421,3 +425,8 @@ def setup_environment():
 @pytest.fixture
 def setup_ant_type():
     return 'macro'
+
+
+@pytest.fixture
+def setup_transmission_type():
+    return '1x1'
