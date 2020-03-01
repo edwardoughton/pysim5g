@@ -34,10 +34,11 @@ class SimulationManager(object):
         A dict containing all simulation parameters necessary.
 
     """
-    def __init__(self, transmitter, interfering_transmitters,
-        ant_type, receivers, site_area, simulation_parameters):
+    def __init__(self, transmitter, interfering_transmitters, ant_type,
+        receivers, site_area, simulation_parameters):
 
-        self.transmitter = Transmitter(transmitter[0], ant_type, simulation_parameters)
+        self.transmitter = Transmitter(transmitter[0], ant_type,
+            simulation_parameters)
         self.interfering_transmitters = {}
         self.receivers = {}
         self.site_area = SiteArea(site_area[0])
@@ -56,7 +57,7 @@ class SimulationManager(object):
 
 
     def estimate_link_budget(self, frequency, bandwidth,
-        generation, ant_type, environment,
+        generation, ant_type, tranmission_type, environment,
         modulation_and_coding_lut, simulation_parameters):
         """
 
@@ -72,6 +73,8 @@ class SimulationManager(object):
             Either 4G or 5G dependent on technology.
         ant_type : str
             Type of antenna (macro, small etc.).
+        tranmission_type : string
+            Transmission type (SISO, MIMO etc.).
         environment : string
             Either urban, suburban or rural.
         modulation_and_coding_lut : list of tuples
@@ -133,6 +136,7 @@ class SimulationManager(object):
                 'ave_distance': ave_distance,
                 'noise': f_noise,
                 'i_plus_n': np.log10(i_plus_n),
+                'tranmission_type': tranmission_type,
                 'sinr': sinr,
                 'spectral_efficiency': spectral_efficiency,
                 'capacity_mbps': capacity_mbps,
@@ -490,28 +494,27 @@ class SimulationManager(object):
             Efficiency of information transfer in Bps/Hz
 
         """
+        # print(modulation_and_coding_lut)
         spectral_efficiency = 0.1
         for lower, upper in pairwise(modulation_and_coding_lut):
             if lower[0] and upper[0] == generation:
 
-                lower_sinr = lower[5]
-                upper_sinr = upper[5]
+                lower_sinr = lower[6]
+                upper_sinr = upper[6]
 
                 if sinr >= lower_sinr and sinr < upper_sinr:
-                    spectral_efficiency = lower[4]
+                    spectral_efficiency = lower[5]
                     return spectral_efficiency
 
                 highest_value = modulation_and_coding_lut[-1]
-                if sinr >= highest_value[5]:
 
-                    spectral_efficiency = highest_value[4]
+                if sinr >= highest_value[6]:
+                    spectral_efficiency = highest_value[5]
                     return spectral_efficiency
-
 
                 lowest_value = modulation_and_coding_lut[0]
 
                 if sinr < lowest_value[5]:
-
                     spectral_efficiency = 0
                     return spectral_efficiency
 
