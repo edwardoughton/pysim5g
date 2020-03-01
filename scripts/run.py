@@ -231,33 +231,6 @@ def obtain_percentile_values(results, transmission_type, parameters):
     return percentile_site_results
 
 
-def get_lookup_table(lut, transmission_type):
-    """
-    Subsets the lookup table based on the transmission type.
-
-    Parameters
-    ----------
-    transmission_type : string
-        Either SISO (1x1), or MIMO (4x4, 8x8 etc.)
-
-    Returns
-    -------
-    output : list
-        Subset of lookup table.
-
-    """
-    output = []
-
-    #('4G', '1x1', 1, 'QPSK', 78,	0.1523, -6.7),
-    for item in lut:
-        if item[1] == transmission_type:
-            output.append(
-                item
-            )
-
-    return output
-
-
 def obtain_threshold_values_choice(results, parameters):
     """
 
@@ -895,7 +868,7 @@ def write_shapefile(data, directory, filename, crs):
 
 
 def run_simulator(parameters, spectrum_portfolio, ant_types,
-    tranmission_types, site_radii, modulation_and_coding_lut, costs):
+    site_radii, modulation_and_coding_lut, costs):
     """
 
     Function to run the simulator and all associated modules.
@@ -925,75 +898,70 @@ def run_simulator(parameters, spectrum_portfolio, ant_types,
         for ant_type in ant_types:
             site_radii_generator = site_radii[ant_type]
             for site_radius in site_radii_generator[environment]:
-                for transmission_type in tranmission_types:
 
-                    lut = get_lookup_table(modulation_and_coding_lut, transmission_type)
+                if environment == 'urban' and site_radius > 5000:
+                    continue
+                print('--working on {}: {}'.format(environment, site_radius))
 
-                    print('--working on {}: {} ({})'.format(environment, site_radius,
-                        transmission_type))
-
-                    transmitter, interfering_transmitters, site_area, int_site_areas = \
-                        produce_sites_and_site_areas(
-                            unprojected_point['geometry']['coordinates'],
-                            site_radius,
-                            unprojected_crs,
-                            projected_crs
-                            )
-
-                    receivers = generate_receivers(site_area, PARAMETERS, 1)
-
-                    for frequency, bandwidth, generation in spectrum_portfolio:
-
-                        if generation == '4G' and not transmission_type == '1x1':
-                            continue
-
-                        MANAGER = SimulationManager(
-                            transmitter, interfering_transmitters, ant_type,
-                            receivers, site_area, PARAMETERS
-                            )
-
-                        results = MANAGER.estimate_link_budget(
-                            frequency,
-                            bandwidth,
-                            generation,
-                            ant_type,
-                            transmission_type,
-                            environment,
-                            lut,
-                            parameters
-                            )
-
-                        folder = os.path.join(BASE_PATH, '..', 'results', 'full_tables')
-                        filename = 'full_capacity_lut_{}_{}_{}_{}_{}.csv'.format(
-                            environment, site_radius, frequency, ant_type, transmission_type)
-
-                        write_full_results(results, environment, site_radius,
-                            frequency, bandwidth, generation, ant_type, transmission_type,
-                            folder, filename, parameters)
-
-                        percentile_site_results = obtain_percentile_values(
-                            results, transmission_type, parameters
+                transmitter, interfering_transmitters, site_area, int_site_areas = \
+                    produce_sites_and_site_areas(
+                        unprojected_point['geometry']['coordinates'],
+                        site_radius,
+                        unprojected_crs,
+                        projected_crs
                         )
 
-                        results_directory = os.path.join(BASE_PATH, '..', 'results')
-                        write_frequency_lookup_table(percentile_site_results, environment,
-                            site_radius, frequency, bandwidth, generation,
-                            ant_type, transmission_type, results_directory,
-                            'capacity_lut_by_frequency_{}.csv'.format(parameters['percentile']),
-                            parameters
+                receivers = generate_receivers(site_area, PARAMETERS, 1)
+
+                for frequency, bandwidth, generation, transmission_type in spectrum_portfolio:
+
+                    MANAGER = SimulationManager(
+                        transmitter, interfering_transmitters, ant_type,
+                        receivers, site_area, PARAMETERS
                         )
 
-                        # if frequency == spectrum_portfolio[0][0]:
+                    results = MANAGER.estimate_link_budget(
+                        frequency,
+                        bandwidth,
+                        generation,
+                        ant_type,
+                        transmission_type,
+                        environment,
+                        modulation_and_coding_lut,
+                        parameters
+                        )
 
-                        #     percentile_site_results = calculate_costs(
-                        #         percentile_site_results, costs, parameters,
-                        #         site_radius, environment
-                        #     )
+                    folder = os.path.join(BASE_PATH, '..', 'results', 'full_tables')
+                    filename = 'full_capacity_lut_{}_{}_{}_{}_{}.csv'.format(
+                        environment, site_radius, frequency, ant_type, transmission_type)
 
-                        #     write_cost_lookup_table(percentile_site_results, results_directory,
-                        #         'percentile_{}_capacity_lut.csv'.format(
-                        #         parameters['percentile'])
-                        #     )
+                    write_full_results(results, environment, site_radius,
+                        frequency, bandwidth, generation, ant_type, transmission_type,
+                        folder, filename, parameters)
+
+                    percentile_site_results = obtain_percentile_values(
+                        results, transmission_type, parameters
+                    )
+
+                    results_directory = os.path.join(BASE_PATH, '..', 'results')
+                    write_frequency_lookup_table(percentile_site_results, environment,
+                        site_radius, frequency, bandwidth, generation,
+                        ant_type, transmission_type, results_directory,
+                        'capacity_lut_by_frequency_{}.csv'.format(parameters['percentile']),
+                        parameters
+                    )
+
+                    if frequency == spectrum_portfolio[0][0]:
+
+                        percentile_site_results = calculate_costs(
+                            percentile_site_results, costs, parameters,
+                            site_radius, environment
+                        )
+
+                        write_cost_lookup_table(percentile_site_results, results_directory,
+                            'percentile_{}_capacity_lut.csv'.format(
+                            parameters['percentile'])
+                        )
 
     #                     # geojson_receivers = convert_results_geojson(results)
 
@@ -1036,7 +1004,7 @@ def run_simulator(parameters, spectrum_portfolio, ant_types,
 if __name__ == '__main__':
 
     PARAMETERS = {
-        'iterations': 1,
+        'iterations': 100,
         'seed_value1': 1,
         'seed_value2': 2,
         'indoor_users_percentage': 50,
@@ -1057,7 +1025,7 @@ if __name__ == '__main__':
         'street_width': 20,
         'above_roof': 0,
         'network_load': 50,
-        'percentile': 50,
+        'percentile': 10,
         'sectorization': 3,
         'mnos': 2,
         'asset_lifetime': 10,
@@ -1081,24 +1049,17 @@ if __name__ == '__main__':
     }
 
     SPECTRUM_PORTFOLIO = [
-        (0.7, 10, '5G'),
-        (0.8, 10, '4G'),
-        (1.8, 10, '4G'),
-        (2.6, 10, '4G'),
-        (3.5, 50, '5G'),
-        (3.7, 50, '5G'),
-        (26, 500, '5G'),
+        (0.7, 10, '5G', '8x8'),
+        (0.8, 10, '4G', '1x1'),
+        (2.6, 10, '4G', '1x1'),
+        (3.5, 50, '5G', '8x8'),
+        (3.7, 50, '5G', '8x8'),
+        (26, 500, '5G', '8x8'),
     ]
 
     ANT_TYPE = [
         ('macro'),
         ('micro'),
-    ]
-
-    TRANSMISSION_TYPES = [
-        '1x1',
-        # '4x4',
-        '8x8',
     ]
 
     MODULATION_AND_CODING_LUT =[
@@ -1121,36 +1082,6 @@ if __name__ == '__main__':
         ('4G', '1x1', 13, '64QAM', 772, 4.5234, 18.7),
         ('4G', '1x1', 14, '64QAM', 973, 5.1152, 21),
         ('4G', '1x1', 15, '64QAM', 948, 5.5547, 22.7),
-        ('5G', '1x1', 1, 'QPSK', 78, 0.1523, -6.7),
-        ('5G', '1x1', 2, 'QPSK', 193, 0.377, -4.7),
-        ('5G', '1x1', 3, 'QPSK', 449, 0.877, -2.3),
-        ('5G', '1x1', 4, '16QAM', 378, 1.4766, 0.2),
-        ('5G', '1x1', 5, '16QAM', 490, 1.9141, 2.4),
-        ('5G', '1x1', 6, '16QAM', 616, 2.4063, 4.3),
-        ('5G', '1x1', 7, '64QAM', 466, 2.7305, 5.9),
-        ('5G', '1x1', 8, '64QAM', 567, 3.3223, 8.1),
-        ('5G', '1x1', 9, '64QAM', 666, 3.9023, 10.3),
-        ('5G', '1x1', 10, '64QAM', 772, 4.5234, 11.7),
-        ('5G', '1x1', 11, '64QAM', 873, 5.1152, 14.1),
-        ('5G', '1x1', 12, '256QAM', 711, 5.5547, 16.3),
-        ('5G', '1x1', 13, '256QAM', 797, 6.2266, 18.7),
-        ('5G', '1x1', 14, '256QAM', 885, 6.9141, 21),
-        ('5G', '1x1', 15, '256QAM', 948, 7.4063, 22.7),
-        ('5G', '4x4', 1, 'QPSK', 78, 0.15, -6.7),
-        ('5G', '4x4', 2, 'QPSK', 193, 1.02, -4.7),
-        ('5G', '4x4', 3, 'QPSK', 449, 2.21, -2.3),
-        ('5G', '4x4', 4, '16QAM', 378, 3.20, 0.2),
-        ('5G', '4x4', 5, '16QAM', 490, 4.00, 2.4),
-        ('5G', '4x4', 6, '16QAM', 616, 5.41, 4.3),
-        ('5G', '4x4', 7, '64QAM', 466, 6.20, 5.9),
-        ('5G', '4x4', 8, '64QAM', 567, 8.00, 8.1),
-        ('5G', '4x4', 9, '64QAM', 666, 9.50, 10.3),
-        ('5G', '4x4', 10, '64QAM', 772, 11.00, 11.7),
-        ('5G', '4x4', 11, '64QAM', 873, 14.00, 14.1),
-        ('5G', '4x4', 12, '256QAM', 711, 16.00, 16.3),
-        ('5G', '4x4', 13, '256QAM', 797, 19.00, 18.7),
-        ('5G', '4x4', 14, '256QAM', 885, 22.00, 21),
-        ('5G', '4x4', 15, '256QAM', 948, 25.00, 22.7),
         ('5G', '8x8', 1, 'QPSK', 78, 0.30, -6.7),
         ('5G', '8x8', 2, 'QPSK', 193, 2.05, -4.7),
         ('5G', '8x8', 3, 'QPSK', 449, 4.42, -2.3),
@@ -1172,8 +1103,8 @@ if __name__ == '__main__':
         for n in range(min, max, increment):
             yield n
 
-    INCREMENT_MA = (400, 30400, 1000) #(5000, 5500, 500) #
-    INCREMENT_MI = (40, 540, 100)
+    INCREMENT_MA = (400, 30400, 400) #(5000, 5500, 500)
+    INCREMENT_MI = (40, 540, 80)
 
     SITE_RADII = {
         'macro': {
@@ -1198,7 +1129,6 @@ if __name__ == '__main__':
         PARAMETERS,
         SPECTRUM_PORTFOLIO,
         ANT_TYPE,
-        TRANSMISSION_TYPES,
         SITE_RADII,
         MODULATION_AND_CODING_LUT,
         COSTS
