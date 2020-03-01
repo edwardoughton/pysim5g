@@ -57,7 +57,7 @@ def calculate_costs(datum, costs, parameters, site_radius, environment):
                 'inter_site_distance': inter_site_distance,
                 'site_area_km2': site_area_km2,
                 'sites_per_km2': sites_per_km2,
-                'tranmission_type': datum['tranmission_type'],
+                'transmission_type': datum['transmission_type'],
                 'results_type': 'percentile_{}'.format(parameters['percentile']),
                 'path_loss': datum['path_loss'],
                 'received_power': datum['received_power'],

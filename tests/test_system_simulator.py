@@ -16,7 +16,7 @@ def test_estimate_link_budget(base_system, setup_modulation_coding_lut,
     setup_parameters):
 
     actual_result = base_system.estimate_link_budget(
-        0.7, 10, '5G', 30, 'urban', setup_modulation_coding_lut,
+        0.7, 10, '5G', 'macro', '1x1', 'urban', setup_modulation_coding_lut,
         setup_parameters
         )
 
