@@ -142,7 +142,7 @@ def generate_receivers(site_area, parameters, grid):
 def obtain_percentile_values(results, transmission_type, parameters):
     """
 
-    Get the threshold value for a metric based on a given percentile.
+    Get the threshold value for a metric based on a given percentiles.
 
     Parameters
     ----------
@@ -200,6 +200,7 @@ def obtain_percentile_values(results, transmission_type, parameters):
         else:
             estimated_capacity_values_km2.append(estimated_capacity_km2)
 
+
     percentile_site_results = {
         'results_type': (
             '{}_percentile'.format(percentile)
@@ -223,8 +224,14 @@ def obtain_percentile_values(results, transmission_type, parameters):
         'capacity_mbps': np.percentile(
             estimated_capacity_values, percentile
         ),
-        'capacity_mbps_km2': np.percentile(
-            estimated_capacity_values_km2, percentile
+        'capacity_mbps_km2_10ci': np.percentile(
+            estimated_capacity_values_km2, 100 - 10
+        ),
+        'capacity_mbps_km2_{}ci'.format(percentile): np.percentile(
+            estimated_capacity_values_km2, 100 - percentile
+        ),
+        'capacity_mbps_km2_90ci': np.percentile(
+            estimated_capacity_values_km2, 100 - 90
         ),
     }
 
@@ -489,7 +496,9 @@ def write_frequency_lookup_table(result, environment, site_radius,
                 'sinr_dB',
                 'spectral_efficiency_bps_hz',
                 'capacity_mbps',
-                'capacity_mbps_km2',
+                'capacity_mbps_km2_10ci',
+                'capacity_mbps_km2_{}ci'.format(parameters['percentile']),
+                'capacity_mbps_km2_90ci',
             )
         )
     else:
@@ -515,7 +524,9 @@ def write_frequency_lookup_table(result, environment, site_radius,
             result['sinr'],
             result['spectral_efficiency'],
             result['capacity_mbps'],
-            result['capacity_mbps_km2'] * sectors,
+            result['capacity_mbps_km2_10ci'] * sectors,
+            result['capacity_mbps_km2_{}ci'.format(parameters['percentile'])] * sectors,
+            result['capacity_mbps_km2_90ci'] * sectors,
         )
     )
 
@@ -947,21 +958,20 @@ def run_simulator(parameters, spectrum_portfolio, ant_types,
                     write_frequency_lookup_table(percentile_site_results, environment,
                         site_radius, frequency, bandwidth, generation,
                         ant_type, transmission_type, results_directory,
-                        'capacity_lut_by_frequency_{}.csv'.format(parameters['percentile']),
-                        parameters
+                        'capacity_lut_by_frequency.csv', parameters
                     )
 
-                    if frequency == spectrum_portfolio[0][0]:
+                    # if frequency == spectrum_portfolio[0][0]:
 
-                        percentile_site_results = calculate_costs(
-                            percentile_site_results, costs, parameters,
-                            site_radius, environment
-                        )
+                    #     percentile_site_results = calculate_costs(
+                    #         percentile_site_results, costs, parameters,
+                    #         site_radius, environment
+                    #     )
 
-                        write_cost_lookup_table(percentile_site_results, results_directory,
-                            'percentile_{}_capacity_lut.csv'.format(
-                            parameters['percentile'])
-                        )
+                    #     write_cost_lookup_table(percentile_site_results, results_directory,
+                    #         'percentile_{}_capacity_lut.csv'.format(
+                    #         parameters['percentile'])
+                    #     )
 
     #                     # geojson_receivers = convert_results_geojson(results)
 
@@ -1004,7 +1014,7 @@ def run_simulator(parameters, spectrum_portfolio, ant_types,
 if __name__ == '__main__':
 
     PARAMETERS = {
-        'iterations': 100,
+        'iterations': 20,
         'seed_value1': 1,
         'seed_value2': 2,
         'indoor_users_percentage': 50,
@@ -1025,7 +1035,7 @@ if __name__ == '__main__':
         'street_width': 20,
         'above_roof': 0,
         'network_load': 50,
-        'percentile': 10,
+        'percentile': 50,
         'sectorization': 3,
         'mnos': 2,
         'asset_lifetime': 10,
