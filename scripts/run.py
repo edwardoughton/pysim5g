@@ -224,6 +224,9 @@ def obtain_percentile_values(results, transmission_type, parameters):
         'capacity_mbps': np.percentile(
             estimated_capacity_values, percentile
         ),
+        'capacity_mbps_km2_1ci': np.percentile(
+            estimated_capacity_values_km2, 100 - 1
+        ),
         'capacity_mbps_km2_10ci': np.percentile(
             estimated_capacity_values_km2, 100 - 10
         ),
@@ -232,6 +235,9 @@ def obtain_percentile_values(results, transmission_type, parameters):
         ),
         'capacity_mbps_km2_90ci': np.percentile(
             estimated_capacity_values_km2, 100 - 90
+        ),
+        'capacity_mbps_km2_99ci': np.percentile(
+            estimated_capacity_values_km2, 100 - 99
         ),
     }
 
@@ -496,9 +502,11 @@ def write_frequency_lookup_table(result, environment, site_radius,
                 'sinr_dB',
                 'spectral_efficiency_bps_hz',
                 'capacity_mbps',
+                'capacity_mbps_km2_1ci',
                 'capacity_mbps_km2_10ci',
                 'capacity_mbps_km2_{}ci'.format(parameters['percentile']),
                 'capacity_mbps_km2_90ci',
+                'capacity_mbps_km2_99ci',
             )
         )
     else:
@@ -524,9 +532,11 @@ def write_frequency_lookup_table(result, environment, site_radius,
             result['sinr'],
             result['spectral_efficiency'],
             result['capacity_mbps'],
+            result['capacity_mbps_km2_1ci'] * sectors,
             result['capacity_mbps_km2_10ci'] * sectors,
             result['capacity_mbps_km2_{}ci'.format(parameters['percentile'])] * sectors,
             result['capacity_mbps_km2_90ci'] * sectors,
+            result['capacity_mbps_km2_99ci'] * sectors,
         )
     )
 
