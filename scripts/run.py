@@ -139,7 +139,7 @@ def generate_receivers(site_area, parameters, grid):
     return receivers
 
 
-def obtain_percentile_values(results, transmission_type, parameters):
+def obtain_percentile_values(results, transmission_type, parameters, confidence_intervals):
     """
 
     Get the threshold value for a metric based on a given percentiles.
@@ -158,7 +158,7 @@ def obtain_percentile_values(results, transmission_type, parameters):
         Contains the percentile value for each site metric.
 
     """
-    percentile = parameters['percentile']
+    output = []
 
     path_loss_values = []
     received_power_values = []
@@ -200,48 +200,35 @@ def obtain_percentile_values(results, transmission_type, parameters):
         else:
             estimated_capacity_values_km2.append(estimated_capacity_km2)
 
+    for confidence_interval in confidence_intervals:
 
-    percentile_site_results = {
-        'results_type': (
-            '{}_percentile'.format(percentile)
-        ),
-        'tranmission_type': transmission_type,
-        'path_loss': np.percentile(
-            path_loss_values, percentile
-        ),
-        'received_power': np.percentile(
-            received_power_values, percentile
-        ),
-        'interference': np.percentile(
-            interference_values, percentile
-        ),
-        'sinr': np.percentile(
-            sinr_values, percentile
-        ),
-        'spectral_efficiency': np.percentile(
-            spectral_efficiency_values, percentile
-        ),
-        'capacity_mbps': np.percentile(
-            estimated_capacity_values, percentile
-        ),
-        'capacity_mbps_km2_1ci': np.percentile(
-            estimated_capacity_values_km2, 100 - 1
-        ),
-        'capacity_mbps_km2_10ci': np.percentile(
-            estimated_capacity_values_km2, 100 - 10
-        ),
-        'capacity_mbps_km2_{}ci'.format(percentile): np.percentile(
-            estimated_capacity_values_km2, 100 - percentile
-        ),
-        'capacity_mbps_km2_90ci': np.percentile(
-            estimated_capacity_values_km2, 100 - 90
-        ),
-        'capacity_mbps_km2_99ci': np.percentile(
-            estimated_capacity_values_km2, 100 - 99
-        ),
-    }
+        output.append({
+            'confidence_interval': confidence_interval,
+            'tranmission_type': transmission_type,
+            'path_loss': np.percentile(
+                path_loss_values, confidence_interval #<- low path loss is better
+            ),
+            'received_power': np.percentile(
+                received_power_values, 100 - confidence_interval
+            ),
+            'interference': np.percentile(
+                interference_values, confidence_interval #<- low interference is better
+            ),
+            'sinr': np.percentile(
+                sinr_values, 100 - confidence_interval
+            ),
+            'spectral_efficiency': np.percentile(
+                spectral_efficiency_values, 100 - confidence_interval
+            ),
+            'capacity_mbps': np.percentile(
+                estimated_capacity_values, 100 - confidence_interval
+            ),
+            'capacity_mbps_km2': np.percentile(
+                estimated_capacity_values_km2, 100 - confidence_interval
+            )
+        })
 
-    return percentile_site_results
+    return output
 
 
 def obtain_threshold_values_choice(results, parameters):
@@ -435,7 +422,7 @@ def write_full_results(data, environment, site_radius, frequency,
             ))
 
 
-def write_frequency_lookup_table(result, environment, site_radius,
+def write_frequency_lookup_table(results, environment, site_radius,
     frequency, bandwidth, generation, ant_type, tranmission_type,
     directory, filename, parameters):
     """
@@ -485,7 +472,7 @@ def write_frequency_lookup_table(result, environment, site_radius,
         lut_writer = csv.writer(lut_file)
         lut_writer.writerow(
             (
-                'results_type',
+                'confidence_interval',
                 'environment',
                 'inter_site_distance_m',
                 'site_area_km2',
@@ -502,43 +489,36 @@ def write_frequency_lookup_table(result, environment, site_radius,
                 'sinr_dB',
                 'spectral_efficiency_bps_hz',
                 'capacity_mbps',
-                'capacity_mbps_km2_1ci',
-                'capacity_mbps_km2_10ci',
-                'capacity_mbps_km2_{}ci'.format(parameters['percentile']),
-                'capacity_mbps_km2_90ci',
-                'capacity_mbps_km2_99ci',
+                'capacity_mbps_km2',
             )
         )
     else:
         lut_file = open(directory, 'a', newline='')
         lut_writer = csv.writer(lut_file)
 
-    lut_writer.writerow(
-        (
-            result['results_type'],
-            environment,
-            inter_site_distance,
-            site_area_km2,
-            sites_per_km2,
-            frequency,
-            bandwidth,
-            sectors,
-            generation,
-            ant_type,
-            tranmission_type,
-            result['path_loss'],
-            result['received_power'],
-            result['interference'],
-            result['sinr'],
-            result['spectral_efficiency'],
-            result['capacity_mbps'],
-            result['capacity_mbps_km2_1ci'] * sectors,
-            result['capacity_mbps_km2_10ci'] * sectors,
-            result['capacity_mbps_km2_{}ci'.format(parameters['percentile'])] * sectors,
-            result['capacity_mbps_km2_90ci'] * sectors,
-            result['capacity_mbps_km2_99ci'] * sectors,
+    for result in results:
+        lut_writer.writerow(
+            (
+                result['confidence_interval'],
+                environment,
+                inter_site_distance,
+                site_area_km2,
+                sites_per_km2,
+                frequency,
+                bandwidth,
+                sectors,
+                generation,
+                ant_type,
+                tranmission_type,
+                result['path_loss'],
+                result['received_power'],
+                result['interference'],
+                result['sinr'],
+                result['spectral_efficiency'],
+                result['capacity_mbps'],
+                result['capacity_mbps_km2'] * sectors,
+            )
         )
-    )
 
     lut_file.close()
 
@@ -889,7 +869,7 @@ def write_shapefile(data, directory, filename, crs):
 
 
 def run_simulator(parameters, spectrum_portfolio, ant_types,
-    site_radii, modulation_and_coding_lut, costs):
+    site_radii, modulation_and_coding_lut, costs, confidence_intervals):
     """
 
     Function to run the simulator and all associated modules.
@@ -922,6 +902,9 @@ def run_simulator(parameters, spectrum_portfolio, ant_types,
 
                 if environment == 'urban' and site_radius > 5000:
                     continue
+                if environment == 'suburban' and site_radius > 15000:
+                    continue
+
                 print('--working on {}: {}'.format(environment, site_radius))
 
                 transmitter, interfering_transmitters, site_area, int_site_areas = \
@@ -935,6 +918,8 @@ def run_simulator(parameters, spectrum_portfolio, ant_types,
                 receivers = generate_receivers(site_area, PARAMETERS, 1)
 
                 for frequency, bandwidth, generation, transmission_type in spectrum_portfolio:
+
+                    print('{}, {}, {}, {}'.format(frequency, bandwidth, generation, transmission_type))
 
                     MANAGER = SimulationManager(
                         transmitter, interfering_transmitters, ant_type,
@@ -961,7 +946,7 @@ def run_simulator(parameters, spectrum_portfolio, ant_types,
                         folder, filename, parameters)
 
                     percentile_site_results = obtain_percentile_values(
-                        results, transmission_type, parameters
+                        results, transmission_type, parameters, confidence_intervals
                     )
 
                     results_directory = os.path.join(BASE_PATH, '..', 'results')
@@ -1021,6 +1006,7 @@ def run_simulator(parameters, spectrum_portfolio, ant_types,
     # #     'aggregate_strategy_costs.csv'.format(PARAMETERS['percentile'])
     # # )
 
+
 if __name__ == '__main__':
 
     PARAMETERS = {
@@ -1068,13 +1054,27 @@ if __name__ == '__main__':
         'router': 2000,
     }
 
+    # SPECTRUM_PORTFOLIO = [
+    #     (0.7, 1, '5G', '8x8'),
+    #     (0.8, 1, '4G', '1x1'),
+    #     (2.6, 1, '4G', '1x1'),
+    #     (3.5, 1, '5G', '8x8'),
+    #     (3.7, 1, '5G', '8x8'),
+    #     (26, 1, '5G', '8x8'),
+    # ]
+
     SPECTRUM_PORTFOLIO = [
-        (0.7, 10, '5G', '8x8'),
-        (0.8, 10, '4G', '1x1'),
-        (2.6, 10, '4G', '1x1'),
-        (3.5, 50, '5G', '8x8'),
-        (3.7, 50, '5G', '8x8'),
-        (26, 500, '5G', '8x8'),
+        (0.7, 1, '4G', '1x1'),
+        (0.8, 1, '4G', '1x1'),
+        (1.8, 1, '4G', '1x1'),
+        (2.1, 1, '4G', '1x1'),
+        (2.3, 1, '4G', '1x1'),
+        (2.5, 1, '4G', '1x1'),
+        (2.6, 1, '4G', '1x1'),
+        (0.7, 1, '5G', '1x1'),
+        (3.5, 1, '5G', '1x1'),
+        (3.7, 1, '5G', '1x1'),
+        (26.0, 1, '5G', '1x1'),
     ]
 
     ANT_TYPE = [
@@ -1119,11 +1119,17 @@ if __name__ == '__main__':
         ('5G', '8x8', 15, '256QAM', 948, 50.00, 22.7),
     ]
 
+    CONFIDENCE_INTERVALS = [
+        5,
+        50,
+        95,
+    ]
+
     def generate_site_radii(min, max, increment):
         for n in range(min, max, increment):
             yield n
 
-    INCREMENT_MA = (400, 30400, 400) #(5000, 5500, 500)
+    INCREMENT_MA = (400, 30400, 1000) #(5000, 5500, 500)
     INCREMENT_MI = (40, 540, 80)
 
     SITE_RADII = {
@@ -1151,5 +1157,6 @@ if __name__ == '__main__':
         ANT_TYPE,
         SITE_RADII,
         MODULATION_AND_CODING_LUT,
-        COSTS
+        COSTS,
+        CONFIDENCE_INTERVALS
         )
