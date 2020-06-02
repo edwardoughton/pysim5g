@@ -76,7 +76,7 @@ def plotting_function1_isd(data):
     sns.set(font_scale=1.1)
 
     plot = sns.relplot(x="Inter-Site Distance (km)", y='Value', hue="Frequency (GHz)",
-        col="Metric", col_wrap=2, palette=sns.color_palette("husl", 6),
+        col="Metric", col_wrap=2, palette=sns.color_palette(),
         kind="line", data=long_data,
         facet_kws=dict(sharex=False, sharey=False),
         legend="full")
