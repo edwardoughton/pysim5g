@@ -4,13 +4,8 @@ Path loss calculator
 Author: Edward Oughton
 Date: April 2019
 
-An implementation of a path loss calculator utilising (i) a Free Space model,
-(ii) the Extended Hata model (150 MHz - 3 GHz) as found in the following
-documents:
-
-ITU-R SM.2028-2
-Monte Carlo simulation methodology for the use in sharing and compatibility
-studies between different radio services or systems.
+An implementation of a path loss calculator utilising (i) a Free Space model, 
+and (ii) ETSI TR 138 901 (0.5 - 100 GHz).
 
 """
 import numpy as np
