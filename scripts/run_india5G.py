@@ -891,8 +891,8 @@ def run_simulator(parameters, spectrum_portfolio, ant_types,
 
     environments =[
         'urban',
-        'suburban',
-        'rural'
+        # 'suburban',
+        # 'rural'
     ]
 
     for environment in environments:
@@ -938,8 +938,8 @@ def run_simulator(parameters, spectrum_portfolio, ant_types,
                         )
 
                     folder = os.path.join(BASE_PATH, '..', 'results', 'full_tables')
-                    filename = 'full_capacity_lut_{}_{}_{}_{}_{}.csv'.format(
-                        environment, site_radius, frequency, ant_type, transmission_type)
+                    filename = 'full_capacity_lut_{}_{}_{}_{}_{}_{}.csv'.format(
+                        environment, site_radius, generation, frequency, ant_type, transmission_type)
 
                     write_full_results(results, environment, site_radius,
                         frequency, bandwidth, generation, ant_type, transmission_type,
@@ -1023,7 +1023,7 @@ if __name__ == '__main__':
         'tx_micro_power': 24,
         'tx_micro_gain': 5,
         'tx_micro_losses': 1,
-        'rx_gain': 4,
+        'rx_gain': 0,
         'rx_losses': 4,
         'rx_misc_losses': 4,
         'rx_height': 1.5,
@@ -1064,22 +1064,24 @@ if __name__ == '__main__':
     # ]
 
     SPECTRUM_PORTFOLIO = [
-        (0.7, 1, '4G', '1x1'),
-        (0.8, 1, '4G', '1x1'),
-        (1.8, 1, '4G', '1x1'),
-        (2.1, 1, '4G', '1x1'),
-        (2.3, 1, '4G', '1x1'),
-        (2.5, 1, '4G', '1x1'),
-        (2.6, 1, '4G', '1x1'),
-        (0.7, 1, '5G', '1x1'),
-        (3.5, 1, '5G', '1x1'),
-        (3.7, 1, '5G', '1x1'),
-        (26.0, 1, '5G', '1x1'),
+        # (0.7, 1, '4G', '2x2'),
+        (0.8, 1, '4G', '2x2'),
+        # (0.85, 1, '4G', '2x2'),
+        # (1.7, 1, '4G', '2x2'),
+        # (1.8, 1, '4G', '2x2'),
+        # (1.9, 1, '4G', '2x2'),
+        # (2.3, 1, '4G', '2x2'),
+        # (2.5, 1, '4G', '2x2'),
+        # (2.6, 1, '4G', '2x2'),
+        # (0.7, 1, '5G', '4x4'),
+        # (2.5, 1, '5G', '4x4'),
+        # (2.6, 1, '5G', '4x4'),
+        # (3.5, 1, '5G', '4x4'),
     ]
 
     ANT_TYPE = [
         ('macro'),
-        ('micro'),
+        # ('micro'),
     ]
 
     MODULATION_AND_CODING_LUT =[
@@ -1087,36 +1089,36 @@ if __name__ == '__main__':
         # (3GPP TS 38.214 Version 15.3.0 Release 15)’. Valbonne, France: ETSI.
         # Generation MIMO CQI Index	Modulation	Coding rate
         # Spectral efficiency (bps/Hz) SINR estimate (dB)
-        ('4G', '1x1', 1, 'QPSK', 78, 0.1523, -6.7),
-        ('4G', '1x1', 2, 'QPSK', 120, 0.2344, -4.7),
-        ('4G', '1x1', 3, 'QPSK', 193, 0.377, -2.3),
-        ('4G', '1x1', 4, 'QPSK', 308, 0.6016, 0.2),
-        ('4G', '1x1', 5, 'QPSK', 449, 0.877, 2.4),
-        ('4G', '1x1', 6, 'QPSK', 602, 1.1758, 4.3),
-        ('4G', '1x1', 7, '16QAM', 378, 1.4766, 5.9),
-        ('4G', '1x1', 8, '16QAM', 490, 1.9141, 8.1),
-        ('4G', '1x1', 9, '16QAM', 616, 2.4063, 10.3),
-        ('4G', '1x1', 10, '64QAM', 466, 2.7305, 11.7),
-        ('4G', '1x1', 11, '64QAM', 567, 3.3223, 14.1),
-        ('4G', '1x1', 12, '64QAM', 666, 3.9023, 16.3),
-        ('4G', '1x1', 13, '64QAM', 772, 4.5234, 18.7),
-        ('4G', '1x1', 14, '64QAM', 973, 5.1152, 21),
-        ('4G', '1x1', 15, '64QAM', 948, 5.5547, 22.7),
-        ('5G', '8x8', 1, 'QPSK', 78, 0.30, -6.7),
-        ('5G', '8x8', 2, 'QPSK', 193, 2.05, -4.7),
-        ('5G', '8x8', 3, 'QPSK', 449, 4.42, -2.3),
-        ('5G', '8x8', 4, '16QAM', 378, 6.40, 0.2),
-        ('5G', '8x8', 5, '16QAM', 490, 8.00, 2.4),
-        ('5G', '8x8', 6, '16QAM', 616, 10.82, 4.3),
-        ('5G', '8x8', 7, '64QAM', 466, 12.40, 5.9),
-        ('5G', '8x8', 8, '64QAM', 567, 16.00, 8.1),
-        ('5G', '8x8', 9, '64QAM', 666, 19.00, 10.3),
-        ('5G', '8x8', 10, '64QAM', 772, 22.00, 11.7),
-        ('5G', '8x8', 11, '64QAM', 873, 28.00, 14.1),
-        ('5G', '8x8', 12, '256QAM', 711, 32.00, 16.3),
-        ('5G', '8x8', 13, '256QAM', 797, 38.00, 18.7),
-        ('5G', '8x8', 14, '256QAM', 885, 44.00, 21),
-        ('5G', '8x8', 15, '256QAM', 948, 50.00, 22.7),
+        ('4G', '2x2', 1, 'QPSK', 78, 0.3, -6.7),
+        ('4G', '2x2', 2, 'QPSK', 120, 0.46, -4.7),
+        ('4G', '2x2', 3, 'QPSK', 193, 0.74, -2.3),
+        ('4G', '2x2', 4, 'QPSK', 308, 1.2, 0.2),
+        ('4G', '2x2', 5, 'QPSK', 449, 1.6, 2.4),
+        ('4G', '2x2', 6, 'QPSK', 602, 2.2, 4.3),
+        ('4G', '2x2', 7, '16QAM', 378, 2.8, 5.9),
+        ('4G', '2x2', 8, '16QAM', 490, 3.8, 8.1),
+        ('4G', '2x2', 9, '16QAM', 616, 4.8, 10.3),
+        ('4G', '2x2', 10, '64QAM', 466, 5.4, 11.7),
+        ('4G', '2x2', 11, '64QAM', 567, 6.6, 14.1),
+        ('4G', '2x2', 12, '64QAM', 666, 7.8, 16.3),
+        ('4G', '2x2', 13, '64QAM', 772, 9, 18.7),
+        ('4G', '2x2', 14, '64QAM', 973, 10.2, 21),
+        ('4G', '2x2', 15, '64QAM', 948, 10.1, 22.7),
+        ('5G', '4x4', 1, 'QPSK', 78, 0.15, -6.7),
+        ('5G', '4x4', 2, 'QPSK', 193, 1.02, -4.7),
+        ('5G', '4x4', 3, 'QPSK', 449, 2.21, -2.3),
+        ('5G', '4x4', 4, '16QAM', 378, 3.20, 0.2),
+        ('5G', '4x4', 5, '16QAM', 490, 4.00, 2.4),
+        ('5G', '4x4', 6, '16QAM', 616, 5.41, 4.3),
+        ('5G', '4x4', 7, '64QAM', 466, 6.20, 5.9),
+        ('5G', '4x4', 8, '64QAM', 567, 8.00, 8.1),
+        ('5G', '4x4', 9, '64QAM', 666, 9.50, 10.3),
+        ('5G', '4x4', 10, '64QAM', 772, 11.00, 11.7),
+        ('5G', '4x4', 11, '64QAM', 873, 14.00, 14.1),
+        ('5G', '4x4', 12, '256QAM', 711, 16.00, 16.3),
+        ('5G', '4x4', 13, '256QAM', 797, 19.00, 18.7),
+        ('5G', '4x4', 14, '256QAM', 885, 22.00, 21),
+        ('5G', '4x4', 15, '256QAM', 948, 25.00, 22.7),
     ]
 
     CONFIDENCE_INTERVALS = [
@@ -1129,8 +1131,7 @@ if __name__ == '__main__':
         for n in range(min, max, increment):
             yield n
 
-    INCREMENT_MA = (400, 30400, 1000) #(5000, 5500, 500)
-    INCREMENT_MI = (40, 540, 80)
+    INCREMENT_MA = (400, 40400, 1000)
 
     SITE_RADII = {
         'macro': {
@@ -1140,14 +1141,6 @@ if __name__ == '__main__':
                 generate_site_radii(INCREMENT_MA[0],INCREMENT_MA[1],INCREMENT_MA[2]),
             'rural':
                 generate_site_radii(INCREMENT_MA[0],INCREMENT_MA[1],INCREMENT_MA[2])
-            },
-        'micro': {
-            'urban':
-                generate_site_radii(INCREMENT_MI[0],INCREMENT_MI[1],INCREMENT_MI[2]),
-            'suburban':
-                generate_site_radii(INCREMENT_MI[0],INCREMENT_MI[1],INCREMENT_MI[2]),
-            'rural':
-                generate_site_radii(INCREMENT_MI[0],INCREMENT_MI[1],INCREMENT_MI[2])
             },
         }
 
