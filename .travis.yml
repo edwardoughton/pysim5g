@@ -7,7 +7,7 @@ before_install:
   - sudo apt-get install -y libspatialindex-dev libgeos-dev gdal-bin
 
 install:
-  - python setup.py install
+  - python setup.py develop
   - pip install pytest
   - pip install pytest-cov
   - pip install coveralls
