@@ -4,8 +4,7 @@ Path loss calculator
 Author: Edward Oughton
 Date: April 2019
 
-An implementation of a path loss calculator utilising (i) a Free Space model, 
-and (ii) ETSI TR 138 901 (0.5 - 100 GHz).
+An implementation of a path loss calculator utilising ETSI TR 138 901 (0.5 - 100 GHz).
 
 """
 import numpy as np
